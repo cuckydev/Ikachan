@@ -5,6 +5,7 @@
 #include "Flags.h"
 #include "EventScript.h"
 #include "Opening.h"
+#include "EventFade.h"
 #include <stdio.h>
 
 DWORD gKeyTrg, gMouseTrg, gMouseTrg2;
@@ -63,6 +64,7 @@ DWORD CountFramePerSecound()
 enum GAMEMODE
 {
 	GAMEMODE_OPENING,
+	GAMEMODE_LOAD = 6,
 };
 
 BOOL Game(HWND hWnd)
@@ -70,6 +72,7 @@ BOOL Game(HWND hWnd)
 	ITEMS items;
 	EVENT_SCR event_scr;
 	OPENING opening;
+	FADE1 fade;
 	DWORD tick; //TODO: probably a piyopiyo instance
 
 	//Load generic data
@@ -80,6 +83,8 @@ BOOL Game(HWND hWnd)
 	InitItem(&items);
 	InitEventScript(&event_scr);
 	InitTextObject(NULL);
+	fade.mode = 0;
+	fade.mask = FALSE;
 
 	//Load fade surface here for some reason
 	MakeSurface_File("Pbm\\Fade.pbm", SURFACE_ID_FADE);
@@ -94,7 +99,11 @@ BOOL Game(HWND hWnd)
 		tick = GetTickCount();
 		GetTrg();
 		CortBox(&grcFull, 0x000000);
+		if (gKeyTrg & KEY_Z)
+			fade.mode = 2;
 		PutOpening(&opening);
+		if (ProcFade(&fade) == TRUE)
+			mode = GAMEMODE_LOAD;
 		if (!Flip_SystemTask(hWnd))
 			return TRUE;
 	}

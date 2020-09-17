@@ -3,10 +3,10 @@
 
 void InitOpening(OPENING *op)
 {
-	op->x0 = -83;
-	op->xC = -128;
-	op->x8 = -64;
-	op->x4 = SURFACE_WIDTH;
+	op->title_y = -83;
+	op->border_x = -128;
+	op->border_y = -64;
+	op->pixel_x = SURFACE_WIDTH;
 }
 
 void PutOpening(OPENING *op)
@@ -21,34 +21,34 @@ void PutOpening(OPENING *op)
 
 	//Draw main title elements
 	CortBox(&grcFull, 0xFFFFFF);
-	PutBitmap3(&grcFull, (SURFACE_WIDTH / 2) - 95, op->x0, &rcTitle, SURFACE_ID_OPENING);
+	PutBitmap3(&grcFull, (SURFACE_WIDTH / 2) - 95, op->title_y, &rcTitle, SURFACE_ID_OPENING);
 	PutBitmap3(&grcFull, (SURFACE_WIDTH / 2) - 28, (SURFACE_HEIGHT / 2) + 17, &rcCrab, SURFACE_ID_OPENING);
-	PutBitmap3(&grcFull, op->x4, SURFACE_HEIGHT - 35, &rcPixel, SURFACE_ID_OPENING);
+	PutBitmap3(&grcFull, op->pixel_x, SURFACE_HEIGHT - 35, &rcPixel, SURFACE_ID_OPENING);
 
 	for (int i = 0; i < ((SURFACE_HEIGHT + 63) / 64 + 1); ++i)
 	{
-		PutBitmap3(&grcFull, op->xC / 2, op->x8 + (i << 6), &rcLeft, 17);
-		PutBitmap3(&grcFull, (SURFACE_WIDTH - 48) - op->xC / 2, op->x8 + (i << 6), &rcRight, 17);
+		PutBitmap3(&grcFull, op->border_x / 2, op->border_y + (i << 6), &rcLeft, 17);
+		PutBitmap3(&grcFull, (SURFACE_WIDTH - 48) - op->border_x / 2, op->border_y + (i << 6), &rcRight, 17);
 	}
 
 	//Move border and logo
-	op->x8++;
-	if (op->x0 < 45)
-		op->x0++;
-	if (op->x8 >= 0)
-		op->x8 -= 64;
-	if (op->xC / 2 < 0)
-		op->xC++;
+	op->border_y++;
+	if (op->title_y < 45)
+		op->title_y++;
+	if (op->border_y >= 0)
+		op->border_y -= 64;
+	if (op->border_x / 2 < 0)
+		op->border_x++;
 
 	//Move 'Made by Studio Pixel' text
-	if (op->x4 <= ((SURFACE_WIDTH / 2) - 96))
+	if (op->pixel_x <= ((SURFACE_WIDTH / 2) - 96))
 	{
 		//Draw 'Press Z' text
-		if (op->x8 / 32 % 2)
+		if (op->border_y / 32 % 2)
 			PutBitmap3(&grcFull, (SURFACE_WIDTH / 2) - 32, (SURFACE_HEIGHT / 2) + 6, &rcPressZ, SURFACE_ID_OPENING);
 	}
 	else
 	{
-		op->x4 -= 2;
+		op->pixel_x -= 2;
 	}
 }

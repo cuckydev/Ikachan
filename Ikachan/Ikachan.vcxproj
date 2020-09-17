@@ -160,6 +160,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Dialog.cpp" />
+    <ClCompile Include="EventFade.cpp" />
     <ClCompile Include="EventScript.cpp" />
     <ClCompile Include="Flags.cpp" />
     <ClCompile Include="Game.cpp" />
@@ -175,6 +176,7 @@
   <ItemGroup>
     <ClInclude Include="Dialog.h" />
     <ClInclude Include="Draw.h" />
+    <ClInclude Include="EventFade.h" />
     <ClInclude Include="EventScript.h" />
     <ClInclude Include="Flags.h" />
     <ClInclude Include="Game.h" />

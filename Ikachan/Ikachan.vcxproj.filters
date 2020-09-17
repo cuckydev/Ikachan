@@ -51,6 +51,9 @@
     <ClCompile Include="Opening.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EventFade.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Draw.h">
@@ -87,6 +90,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Opening.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EventFade.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
