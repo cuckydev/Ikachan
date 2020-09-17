@@ -3,14 +3,9 @@
 
 #define MAX_ITEM 10
 
-struct ITEM
-{
-	BYTE code;
-};
-
 struct ITEMS
 {
-	ITEM *item;
+	CHAR *code;
 	int selected_item;
 };
 

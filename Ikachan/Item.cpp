@@ -5,11 +5,11 @@
 void InitItem(ITEMS *items)
 {
 	//Allocate items
-	items->item = (ITEM*)malloc(MAX_ITEM * sizeof(ITEM));
+	items->code = (CHAR*)LocalAlloc(LPTR, MAX_ITEM * sizeof(CHAR));
 
 	//Reset item codes
 	for (int i = 0; i < MAX_ITEM; i++)
-		items->item[i].code = i + 1;
+		items->code[i] = i + 1;
 }
 
 void PutItem(ITEMS *items)
@@ -24,7 +24,7 @@ void PutItem(ITEMS *items)
 	RECT rcItem = { 0, 0, 0, 16 };
 	for (int i = 0; i < MAX_ITEM; i++)
 	{
-		rcItem.left = (items->item[i].code - 1) * 16;
+		rcItem.left = (items->code[i] - 1) * 16;
 		rcItem.right = rcItem.left + 16;
 		PutBitmap3(&grcFull, (SURFACE_WIDTH - (16 * MAX_ITEM)) / 2 + (i * 16), (SURFACE_HEIGHT / 2) + 16, &rcItem, SURFACE_ID_ITEM);
 	}

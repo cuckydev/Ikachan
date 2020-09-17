@@ -120,7 +120,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -141,7 +141,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -160,9 +160,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Dialog.cpp" />
+    <ClCompile Include="EventScript.cpp" />
+    <ClCompile Include="Flags.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Generic.cpp" />
     <ClCompile Include="Item.cpp" />
+    <ClCompile Include="Opening.cpp" />
+    <ClCompile Include="PixelScript.cpp" />
     <ClCompile Include="PiyoPiyo.cpp" />
     <ClCompile Include="Sound.cpp" />
     <ClCompile Include="System.cpp" />
@@ -171,9 +175,13 @@
   <ItemGroup>
     <ClInclude Include="Dialog.h" />
     <ClInclude Include="Draw.h" />
+    <ClInclude Include="EventScript.h" />
+    <ClInclude Include="Flags.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Generic.h" />
     <ClInclude Include="Item.h" />
+    <ClInclude Include="Opening.h" />
+    <ClInclude Include="PixelScript.h" />
     <ClInclude Include="PiyoPiyo.h" />
     <ClInclude Include="Sound.h" />
     <ClInclude Include="System.h" />
