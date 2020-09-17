@@ -3,7 +3,7 @@
 
 void InitOpening(OPENING *op)
 {
-	op->x0 = 0;
+	op->x0 = -83;
 	op->xC = -128;
 	op->x8 = -64;
 	op->x4 = SURFACE_WIDTH;
