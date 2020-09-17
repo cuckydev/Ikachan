@@ -14,8 +14,8 @@
 #define KEY_Z     0x00000040
 #define KEY_S     0x00000080
 
-extern DWORD gKey;
-extern DWORD gMouse;
+extern DWORD gKey, gKeyTrg;
+extern DWORD gMouse, gMouseTrg, gMouseTrg2;
 
 //Window size
 enum WND_SIZE

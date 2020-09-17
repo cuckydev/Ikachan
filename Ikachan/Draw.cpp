@@ -41,26 +41,20 @@ void SetClientOffset(int width, int height)
 //End of frame function
 BOOL Flip_SystemTask(HWND hWnd)
 {
-	//Run system tasks and wait for next frame
+	//Run system tasks while waiting for next frame
 	static DWORD timePrev;
-	static DWORD timeNow;
-	while (TRUE)
+	while (GetTickCount() < (timePrev + 20))
 	{
+		Sleep(1);
 		if (!SystemTask())
 			return FALSE;
-
-		//Framerate limiter
-		timeNow = GetTickCount();
-		if (timeNow >= timePrev + 20)
-			break;
-		Sleep(1);
 	}
 
-	if (timeNow >= timePrev + 100)
-		timePrev = timeNow;	//If the timer is freakishly out of sync, panic and reset it, instead of spamming frames for who-knows how long
+	if ((timePrev + 100) < GetTickCount())
+		timePrev = GetTickCount();
 	else
 		timePrev += 20;
-
+	
 	//Blit backbuffer to front buffer
 	RECT dst_rect;
 	GetWindowRect(hWnd, &dst_rect);

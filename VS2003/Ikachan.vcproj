@@ -15,7 +15,7 @@
 			OutputDirectory="Debug"
 			IntermediateDirectory="Debug"
 			ConfigurationType="1"
-			CharacterSet="2">
+			CharacterSet="0">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
@@ -64,9 +64,10 @@
 			OutputDirectory="Release"
 			IntermediateDirectory="Release"
 			ConfigurationType="1"
-			CharacterSet="2">
+			CharacterSet="0">
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="0"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				RuntimeLibrary="4"
 				UsePrecompiledHeader="0"
@@ -139,6 +140,9 @@
 				RelativePath="..\Ikachan\Item.cpp">
 			</File>
 			<File
+				RelativePath="..\Ikachan\Map.cpp">
+			</File>
+			<File
 				RelativePath="..\Ikachan\Opening.cpp">
 			</File>
 			<File
@@ -146,6 +150,9 @@
 			</File>
 			<File
 				RelativePath="..\Ikachan\PiyoPiyo.cpp">
+			</File>
+			<File
+				RelativePath="..\Ikachan\Player.cpp">
 			</File>
 			<File
 				RelativePath="..\Ikachan\Sound.cpp">
@@ -183,6 +190,9 @@
 				RelativePath="..\Ikachan\Item.h">
 			</File>
 			<File
+				RelativePath="..\Ikachan\Map.h">
+			</File>
+			<File
 				RelativePath="..\Ikachan\Opening.h">
 			</File>
 			<File
@@ -190,6 +200,9 @@
 			</File>
 			<File
 				RelativePath="..\Ikachan\PiyoPiyo.h">
+			</File>
+			<File
+				RelativePath="..\Ikachan\Player.h">
 			</File>
 			<File
 				RelativePath="..\Ikachan\Sound.h">

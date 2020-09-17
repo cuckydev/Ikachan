@@ -6,6 +6,8 @@
 #include "EventScript.h"
 #include "Opening.h"
 #include "EventFade.h"
+#include "Map.h"
+#include "Player.h"
 #include <stdio.h>
 
 DWORD gKeyTrg, gMouseTrg, gMouseTrg2;
@@ -19,7 +21,7 @@ void GetTrg()
 	key_prev = gKey;
 
 	//Get pressed mouse
-	gMouseTrg = (key_prev ^ gMouse) & gMouse;
+	gMouseTrg = (mouse_prev ^ gMouse) & gMouse;
 	mouse_prev = gMouse;
 
 	//Get some mouse thing
@@ -69,12 +71,15 @@ enum GAMEMODE
 
 BOOL Game(HWND hWnd)
 {
-	ITEMS items;
-	EVENT_SCR event_scr;
+	TCHAR path[MAX_PATH];
+	
 	OPENING opening;
 	FADE1 fade;
+	ITEMS items;
+	EVENT_SCR event_scr;
+	MAP map;
 	DWORD tick; //TODO: probably a piyopiyo instance
-
+	
 	//Load generic data
 	LoadGenericData();
 
@@ -82,6 +87,7 @@ BOOL Game(HWND hWnd)
 	InitFlags();
 	InitItem(&items);
 	InitEventScript(&event_scr);
+	InitMyChar();
 	InitTextObject(NULL);
 
 	fade.mode = FM_NONE;
@@ -105,6 +111,26 @@ BOOL Game(HWND hWnd)
 		PutOpening(&opening);
 		if (ProcFade(&fade) == TRUE)
 			mode = GAMEMODE_LOAD;
+		if (!Flip_SystemTask(hWnd))
+			return TRUE;
+	}
+
+	//Load map event and data
+	sprintf(path, "%s\\%s", gModulePath, "Event.ptx");
+	if (!ReadEventScript(path, &event_scr))
+		return TRUE;
+
+	sprintf(path, "%s\\%s", gModulePath, "Pbm\\Map1.pbm");
+	if (!LoadMapData(path, &map))
+		return TRUE;
+
+	while (1)
+	{
+		tick = GetTickCount();
+		GetTrg();
+		CortBox(&grcFull, 0x000000);
+		ActMyChar(TRUE);
+		PutMyChar();
 		if (!Flip_SystemTask(hWnd))
 			return TRUE;
 	}
