@@ -5,7 +5,7 @@
 void InitItem(ITEMS *items)
 {
 	//Allocate items
-	items->code = (CHAR*)LocalAlloc(LPTR, MAX_ITEM * sizeof(CHAR));
+	items->code = (char*)LocalAlloc(LPTR, MAX_ITEM * sizeof(char));
 
 	//Reset item codes
 	for (int i = 0; i < MAX_ITEM; i++)

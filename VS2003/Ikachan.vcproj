@@ -122,9 +122,6 @@
 				RelativePath="..\Ikachan\Draw.cpp">
 			</File>
 			<File
-				RelativePath="..\Ikachan\EventFade.cpp">
-			</File>
-			<File
 				RelativePath="..\Ikachan\EventScript.cpp">
 			</File>
 			<File
@@ -170,9 +167,6 @@
 			</File>
 			<File
 				RelativePath="..\Ikachan\Draw.h">
-			</File>
-			<File
-				RelativePath="..\Ikachan\EventFade.h">
 			</File>
 			<File
 				RelativePath="..\Ikachan\EventScript.h">

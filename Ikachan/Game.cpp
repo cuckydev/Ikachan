@@ -5,7 +5,6 @@
 #include "Flags.h"
 #include "EventScript.h"
 #include "Opening.h"
-#include "EventFade.h"
 #include "Map.h"
 #include "Player.h"
 #include <stdio.h>
@@ -129,8 +128,9 @@ BOOL Game(HWND hWnd)
 		tick = GetTickCount();
 		GetTrg();
 		CortBox(&grcFull, 0x000000);
-		ActMyChar(TRUE);
+		ActMyChar();
 		PutMyChar();
+		PutMyStatus();
 		if (!Flip_SystemTask(hWnd))
 			return TRUE;
 	}

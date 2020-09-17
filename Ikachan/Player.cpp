@@ -2,9 +2,23 @@
 #include "Draw.h"
 #include "System.h"
 #include "Sound.h"
+#include "EventScript.h"
 
 MYCHAR gMC;
 
+//Unit act functions
+void ActMyChar_Normal();
+void ActMyChar_Dash();
+void ActMyChar_Ship();
+
+typedef void (*MYCHAR_ACT)();
+MYCHAR_ACT act[3] = {ActMyChar_Normal, ActMyChar_Dash, ActMyChar_Ship};
+
+//Life and exp per level
+short gMycLife[MAX_LEVEL] = { 4, 8, 12, 18, 26, 34, 62 };
+short gMycExp[MAX_LEVEL] = { 8, 28, 52, 74, 102, 360, 852 };
+
+//Draw MyChar
 void PutMyChar()
 {
 	static RECT rcMyChar[12] = {
@@ -26,13 +40,25 @@ void PutMyChar()
 	PutBitmap3(&grcFull, (gMC.x / 0x400) - 8, (gMC.y / 0x400) - 8, &rcMyChar[frame], SURFACE_ID_MYCHAR2);
 }
 
-int push_xm[3] = { 4294966784, 512, 0 };
-int push_ym[3] = { 4294966784, 4294966784, 4294966572 };
+void PutMyStatus()
+{
+	static RECT rcStatus = { 0, 0, 88, 32 };
+	PutBitmap3(&grcFull, 8, 8, &rcStatus, SURFACE_ID_STATUS);
+	PutNumber(16, 8, gMC.level);
+	PutNumber(16, 16, gMC.exp);
+	PutNumber(48, 16, gMycExp[gMC.level]);
+	PutNumber(16, 24, gMC.life);
+	PutNumber(48, 24, gMycLife[gMC.level]);
+}
 
-int dash_xm[3] = { 4294964224, 3072, 0 };
-int dash_ym[3] = { 0, 0, 4294964224 };
+//Update MyChar
+int swim_xm[3] = { -0x200, 0x200, 0 };
+int swim_ym[3] = { -0x200, -0x200, -0x2D4 };
 
-void ActMyChar_Normal(BOOL bKey)
+int dash_xm[3] = { -0xC00, 0xC00, 0 };
+int dash_ym[3] = { 0, 0, -0xC00 };
+
+void ActMyChar_Normal()
 {
 	//Get direction
 	gMC.direct = 2;
@@ -41,21 +67,21 @@ void ActMyChar_Normal(BOOL bKey)
 	if (gKey & KEY_RIGHT)
 		gMC.direct = 1;
 
-	//Push
-	if ((gKeyTrg & KEY_Z) && gMC.act_wait == 0)
+	//Swim
+	if ((gKeyTrg & KEY_Z) && gMC.swim_wait == 0)
 	{
-		//Push sound and particle
+		//Swim sound and particle
 		PlaySoundObject(1, 1);
 
 		//Play animation and disable for 8 frames
-		gMC.act_wait = 8;
+		gMC.swim_wait = 8;
 		gMC.ani_no = 1;
 		if (gMC.ani_wait < 100)
 			gMC.ani_wait += 10;
 
-		//Push velocity
-		gMC.xm += push_xm[gMC.direct];
-		gMC.ym += push_ym[gMC.direct];
+		//Swim velocity
+		gMC.xm += swim_xm[gMC.direct];
+		gMC.ym += swim_ym[gMC.direct];
 	}
 
 	//Dash
@@ -92,9 +118,9 @@ void ActMyChar_Normal(BOOL bKey)
 	else
 		--gMC.ani_wait;
 
-	//Action timer
-	if (gMC.act_wait > 0)
-		--gMC.act_wait;
+	//Swim timer
+	if (gMC.swim_wait > 0)
+		--gMC.swim_wait;
 
 	//Dash animation
 	if (gMC.dash_wait == 32)
@@ -120,7 +146,7 @@ void ActMyChar_Normal(BOOL bKey)
 	if (gMC.xm < 0)
 		gMC.xm += 8;
 	
-	if (FALSE)
+	if (!gMC.x27)
 	{
 		if (gMC.xm > 0)
 			gMC.xm -= 24;
@@ -132,9 +158,15 @@ void ActMyChar_Normal(BOOL bKey)
 	if (gMC.xm >= 8 || gMC.xm <= -8)
 		gMC.x += gMC.xm;
 	gMC.y += gMC.ym;
+
+	//Decrement timers
+	if (gMC.x18)
+		--gMC.x18;
+	if (gMC.x1A)
+		--gMC.x1A;
 }
 
-void ActMyChar_Dash(BOOL bKey)
+void ActMyChar_Dash()
 {
 	//Decrease dash timer and stop dashing when depleted
 	if (--gMC.dash_wait <= 0)
@@ -146,36 +178,44 @@ void ActMyChar_Dash(BOOL bKey)
 	gMC.x += gMC.xm;
 	gMC.y += gMC.ym;
 	gMC.ani_no = 3;
+
+	//Decrement timers
+	if (gMC.x18)
+		--gMC.x18;
 }
 
-typedef void (*MYCHAR_ACT)(BOOL);
-void ActMyChar(BOOL bKey)
+void ActMyChar_Ship()
 {
-	static MYCHAR_ACT act[3] = {ActMyChar_Normal, ActMyChar_Dash, NULL};
-	act[gMC.unit](bKey);
+
 }
 
+void ActMyChar()
+{
+	act[gMC.unit]();
+}
+
+//Initalize MyChar
 void InitMyChar()
 {
 	gMC.cond = 1;
 	gMC.equip = 0;
-	//byte_420DD9 = 0;
-	//byte_420DF8 = 0;
-	//word_420DF4 = word_41CA84[0];
-	//word_420DF6 = 0;
+	gMC.x1 = 0;
+	gMC.level = 0;
+	gMC.life = gMycLife[0];
+	gMC.exp = 0;
 	gMC.x = 0;//0xA0000;
 	gMC.y = 0;//0x1A0000;
 	gMC.ym = 0;
 	gMC.xm = 0;
-	//byte_420DFF = 1;
+	gMC.x27 = 1;
 	gMC.ani_wait = 0;
 	gMC.ani_no = 0;
 	gMC.direct = 0;
-	//byte_420E00 = 0;
+	gMC.x28 = 0;
 	gMC.unit = 0;
-	//word_420DF0 = 0;
-	//word_420DF2 = 100;
+	gMC.x18 = 0;
+	gMC.x1A = 100;
 	gMC.dash_wait = 0;
-	gMC.act_wait = 0;
-	//byte_420E01 = 0;
+	gMC.swim_wait = 0;
+	gMC.x29 = 0;
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include <windows.h>
 
-#define FLAG_BYTES 32
+#define FLAG_BYTES (32)
 extern BYTE gFlagNPC[FLAG_BYTES];
 
 void InitFlags();

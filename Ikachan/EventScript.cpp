@@ -2,8 +2,140 @@
 #include "Draw.h"
 #include <stdio.h>
 
-const RECT grcLine = { 0, 0, 272, 16 };
-const RECT grcLineClip = { 24, 190, 296, 226};
+//Rects and other LUTs
+RECT rcFade[16] = {
+	{   0, 0,  16, 16 },
+	{  16, 0,  32, 16 },
+	{  32, 0,  48, 16 },
+	{  48, 0,  64, 16 },
+	{  64, 0,  80, 16 },
+	{  80, 0,  96, 16 },
+	{  96, 0, 112, 16 },
+	{ 112, 0, 128, 16 },
+	{ 128, 0, 144, 16 },
+	{ 144, 0, 160, 16 },
+	{ 160, 0, 176, 16 },
+	{ 176, 0, 192, 16 },
+	{ 192, 0, 208, 16 },
+	{ 208, 0, 224, 16 },
+	{ 224, 0, 240, 16 },
+	{ 240, 0, 256, 16 },
+};
+
+int number_tbl[6] = {100000, 10000, 1000, 100, 10, 1};
+
+RECT rcNumber[10] = {
+	{  0, 0,  8, 8 },
+	{  8, 0, 16, 8 },
+	{ 16, 0, 24, 8 },
+	{ 24, 0, 32, 8 },
+	{ 32, 0, 40, 8 },
+	{ 40, 0, 48, 8 },
+	{ 48, 0, 56, 8 },
+	{ 56, 0, 64, 8 },
+	{ 64, 0, 72, 8 },
+	{ 72, 0, 80, 8 },
+};
+
+RECT grcLine = { 0, 0, 272, 16 };
+RECT grcLineClip = { 24, 190, 296, 226};
+
+//Fade dimensions
+#define FADE_WIDTH ((SURFACE_WIDTH + 15) / 16)
+#define FADE_HEIGHT ((SURFACE_HEIGHT + 15) / 16)
+
+//Fading and other screen effects
+BOOL ProcFade(FADE1 *fade)
+{
+	switch (fade->mode)
+	{
+		case FM_NONE:
+			fade->time = 0;
+			break;
+		case FM_QUAKE:
+			if (++fade->time <= 60)
+			{
+				//Shake screen
+				//frame->x += Random(-10, 10) << 10;
+				//frame->y += Random(-10, 10) << 10;
+
+				//Modify NPCs?
+			}
+			break;
+		case FM_FADEOUT:
+			for (int y = 0; y < FADE_HEIGHT; y++)
+			{
+				for (int x = 0; x < FADE_WIDTH; x++)
+				{
+					int frame = fade->time - y - x;
+					if (frame < 0)
+						frame = 0;
+					if (frame > 15)
+						frame = 15;
+					PutBitmap3(&grcFull, x * 16, ((FADE_HEIGHT - 1) - y) * 16, &rcFade[frame], SURFACE_ID_FADE);
+				}
+			}
+			if (++fade->time <= 50)
+				break;
+			fade->mode = 0;
+			return TRUE;
+		case FM_FADEIN:
+			for (int y = 0; y < FADE_HEIGHT; y++)
+			{
+				for (int x = 0; x < FADE_WIDTH; x++)
+				{
+					int frame = fade->time - y - x;
+					if (frame < 0)
+						frame = 0;
+					if (frame > 15)
+						frame = 15;
+					PutBitmap3(&grcFull, x * 16, ((FADE_HEIGHT - 1) - y) * 16, &rcFade[15 - frame], SURFACE_ID_FADE);
+				}
+			}
+			if (++fade->time <= 50)
+				break;
+			fade->mode = 0;
+			return TRUE;
+		case FM_QUAKE2:
+			if (!(++fade->time % 4))
+			{
+				//Shake screen
+				//frame->x += Random(-10, 10) << 10;
+				//frame->y += Random(-10, 10) << 10;
+
+				//Modify NPCs?
+			}
+			break;
+	}
+
+	if (fade->mask)
+		CortBox(&grcFull, 0x000000);
+	return FALSE;
+}
+
+//Number drawing
+void PutNumber(int x, int y, int no)
+{
+	BOOL v3 = FALSE;
+	int v4;
+	for (int i = 0; i < 6; i++)
+	{
+		v4 = 0;
+		while (no >= number_tbl[i])
+		{
+			++v4;
+			no -= number_tbl[i];
+			v3 = 1;
+		}
+		if (v3 || i == 5)
+			PutBitmap3(&grcFull, x + (8 * i), y, &rcNumber[v4], SURFACE_ID_FIGURE);
+	}
+}
+
+void PutNumber2(int x, int y, int no)
+{
+	
+}
 
 //Some debug function I think
 void DebugPutText(LPCTSTR text)
@@ -11,7 +143,7 @@ void DebugPutText(LPCTSTR text)
 	PutText(0, 1, text, 0xFFFFFF);
 }
 
-//Read an event script file
+//Read event script file
 BOOL ReadEventScript(LPCTSTR path, EVENT_SCR *ptx)
 {
 	//Get filesize
@@ -20,7 +152,7 @@ BOOL ReadEventScript(LPCTSTR path, EVENT_SCR *ptx)
 	CloseHandle(hFile);
 
 	//Allocate data
-	ptx->data = (CHAR*)LocalAlloc(LPTR, ptx->size + 1);
+	ptx->data = (char*)LocalAlloc(LPTR, ptx->size + 1);
 
 	//Open file
 	FILE *fp = fopen(path, "rt");
