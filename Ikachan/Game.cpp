@@ -83,7 +83,8 @@ BOOL Game(HWND hWnd)
 	InitItem(&items);
 	InitEventScript(&event_scr);
 	InitTextObject(NULL);
-	fade.mode = 0;
+
+	fade.mode = FM_NONE;
 	fade.mask = FALSE;
 
 	//Load fade surface here for some reason
@@ -100,7 +101,7 @@ BOOL Game(HWND hWnd)
 		GetTrg();
 		CortBox(&grcFull, 0x000000);
 		if (gKeyTrg & KEY_Z)
-			fade.mode = 2;
+			fade.mode = FM_FADEOUT;
 		PutOpening(&opening);
 		if (ProcFade(&fade) == TRUE)
 			mode = GAMEMODE_LOAD;
