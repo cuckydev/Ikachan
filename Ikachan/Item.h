@@ -1,13 +1,16 @@
 #pragma once
 #include <windows.h>
 
-#define MAX_ITEM (10)
+#define MAX_ITEMS (10)
 
 struct ITEMS
 {
 	char *code;
-	int selected_item;
+	char selected_item;
 };
 
 void InitItem(ITEMS *items);
 void PutItem(ITEMS *items);
+BOOL CheckItem(ITEMS *items, char code);
+BOOL AddItemData(ITEMS *items, char code);
+BOOL SubItemData(ITEMS *items, char code);

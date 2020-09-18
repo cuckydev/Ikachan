@@ -1,6 +1,11 @@
 #include "EventScript.h"
 #include "Draw.h"
+#include "System.h"
+#include "Sound.h"
+#include "Flags.h"
 #include <stdio.h>
+
+#define IS_COMMAND(c1, c2) (ptx->data[ptx->p_read] == '<' && ptx->data[ptx->p_read + 1] == (c1) && ptx->data[ptx->p_read + 2] == (c2))
 
 //Rects and other LUTs
 RECT rcFade[16] = {
@@ -37,37 +42,53 @@ RECT rcNumber[10] = {
 	{ 72, 0, 80, 8 },
 };
 
-RECT grcLine = { 0, 0, 272, 16 };
-RECT grcLineClip = { 24, 190, 296, 226};
+RECT rcNumber2[10] = {
+	{  0, 8,  4, 16 },
+	{  4, 8,  8, 16 },
+	{  8, 8, 12, 16 },
+	{ 12, 8, 16, 16 },
+	{ 16, 8, 20, 16 },
+	{ 20, 8, 24, 16 },
+	{ 24, 8, 28, 16 },
+	{ 28, 8, 32, 16 },
+	{ 32, 8, 36, 16 },
+	{ 36, 8, 40, 16 },
+};
+
+RECT rcLine = { 0, 0, 272, 16 };
+RECT rcYNYes = { 0, 0, 48, 16 };
+RECT rcYNNo = { 0, 16, 48, 32 };
+RECT rcYNSel = { 48, 0, 112, 32 };
+RECT rcLineClip = { 24, 190, 296, 226};
 
 //Fade dimensions
 #define FADE_WIDTH ((SURFACE_WIDTH + 15) / 16)
 #define FADE_HEIGHT ((SURFACE_HEIGHT + 15) / 16)
 
 //Fading and other screen effects
-BOOL ProcFade(FADE1 *fade)
+BOOL ProcFade(FADE *fade, FRAME *frame)
 {
 	switch (fade->mode)
 	{
-		case FM_NONE:
-			fade->time = 0;
+		case FADE_MODE_NONE:
+			fade->wait = 0;
 			break;
-		case FM_QUAKE:
-			if (++fade->time <= 60)
+		case FADE_MODE_QUAKE:
+			if (++fade->wait <= 60)
 			{
 				//Shake screen
-				//frame->x += Random(-10, 10) << 10;
-				//frame->y += Random(-10, 10) << 10;
-
-				//Modify NPCs?
+				frame->x += Random(-10, 10) << 10;
+				frame->y += Random(-10, 10) << 10;
+				
+				//Create quake particles
 			}
 			break;
-		case FM_FADEOUT:
+		case FADE_MODE_FADEOUT:
 			for (int y = 0; y < FADE_HEIGHT; y++)
 			{
 				for (int x = 0; x < FADE_WIDTH; x++)
 				{
-					int frame = fade->time - y - x;
+					int frame = fade->wait - y - x;
 					if (frame < 0)
 						frame = 0;
 					if (frame > 15)
@@ -75,16 +96,16 @@ BOOL ProcFade(FADE1 *fade)
 					PutBitmap3(&grcFull, x * 16, ((FADE_HEIGHT - 1) - y) * 16, &rcFade[frame], SURFACE_ID_FADE);
 				}
 			}
-			if (++fade->time <= 50)
+			if (++fade->wait <= 50)
 				break;
 			fade->mode = 0;
 			return TRUE;
-		case FM_FADEIN:
+		case FADE_MODE_FADEIN:
 			for (int y = 0; y < FADE_HEIGHT; y++)
 			{
 				for (int x = 0; x < FADE_WIDTH; x++)
 				{
-					int frame = fade->time - y - x;
+					int frame = fade->wait - y - x;
 					if (frame < 0)
 						frame = 0;
 					if (frame > 15)
@@ -92,22 +113,22 @@ BOOL ProcFade(FADE1 *fade)
 					PutBitmap3(&grcFull, x * 16, ((FADE_HEIGHT - 1) - y) * 16, &rcFade[15 - frame], SURFACE_ID_FADE);
 				}
 			}
-			if (++fade->time <= 50)
+			if (++fade->wait <= 50)
 				break;
 			fade->mode = 0;
 			return TRUE;
-		case FM_QUAKE2:
-			if (!(++fade->time % 4))
+		case FADE_MODE_QUAKE2:
+			if (!(++fade->wait % 4))
 			{
 				//Shake screen
-				//frame->x += Random(-10, 10) << 10;
-				//frame->y += Random(-10, 10) << 10;
-
-				//Modify NPCs?
+				frame->x += Random(-10, 10) << 10;
+				frame->y += Random(-10, 10) << 10;
+				
+				//Create quake particles
 			}
 			break;
 	}
-
+	
 	if (fade->mask)
 		CortBox(&grcFull, 0x000000);
 	return FALSE;
@@ -134,7 +155,20 @@ void PutNumber(int x, int y, int no)
 
 void PutNumber2(int x, int y, int no)
 {
-	
+	BOOL v3 = FALSE;
+	int v4;
+	for (int i = 0; i < 6; i++)
+	{
+		v4 = 0;
+		while (no >= number_tbl[i])
+		{
+			++v4;
+			no -= number_tbl[i];
+			v3 = 1;
+		}
+		if (v3 || i == 5)
+			PutBitmap3(&grcFull, x + (4 * i), y, &rcNumber2[v4], SURFACE_ID_FIGURE);
+	}
 }
 
 //Some debug function I think
@@ -150,15 +184,15 @@ BOOL ReadEventScript(LPCTSTR path, EVENT_SCR *ptx)
 	HANDLE hFile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	ptx->size = GetFileSize(hFile, NULL);
 	CloseHandle(hFile);
-
+	
 	//Allocate data
 	ptx->data = (char*)LocalAlloc(LPTR, ptx->size + 1);
-
+	
 	//Open file
 	FILE *fp = fopen(path, "rt");
 	if (fp == NULL)
 		return FALSE;
-
+	
 	//Read file
 	fread(ptx->data, ptx->size, 1, fp);
 	fclose(fp);
@@ -189,16 +223,16 @@ BOOL JumpEventScript(EVENT_SCR *ptx)
 			//Get event number
 			++ptx->p_read;
 			short no = GetEventScriptNo(ptx);
-
+			
 			//Skip to new-line
 			while (ptx->data[ptx->p_read] != '\n')
 				ptx->p_read++;
 			ptx->p_read++;
-
+			
 			//Check if this is our intended event
 			if (no == ptx->event_no)
 				return TRUE;
-			if (no < ptx->event_no)
+			if (no > ptx->event_no)
 				return FALSE;
 		}
 	}
@@ -230,6 +264,452 @@ void PutEventScriptCursor(EVENT_SCR *ptx)
 	PutBitmap3(&grcFull, (SURFACE_WIDTH / 2) + 132, SURFACE_HEIGHT - 26, &rcCursor[(ptx->ani_cursor >> 2) % 8], SURFACE_ID_CURSOR);
 }
 
+char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, FADE *fade, FRAME *frame)
+{
+	TCHAR c[3] = { 0 };
+
+	switch (ptx->mode)
+	{
+		case 1:
+			if (JumpEventScript(ptx))
+			{
+				//Initialize script
+				ptx->wait = 0;
+				ptx->line = 0;
+				ptx->ypos_line[0] = 0;
+				ptx->ypos_line[1] = 20;
+				ptx->p_write = 0;
+				CortBox2(&rcLine, 0x000000, SURFACE_ID_TEXT0);
+				CortBox2(&rcLine, 0x000000, SURFACE_ID_TEXT1);
+				ptx->mode = 2;
+			}
+			else
+			{
+				//Don't run script
+				ptx->mode = 0;
+			}
+			return 0;
+		case 2:
+			//Wait until timer is done before resuming execution
+			if (--ptx->wait >= 0)
+				return 0;
+			break;
+		case 4:
+			//Scroll lines
+			ptx->ypos_line[0] -= 4;
+			ptx->ypos_line[1] -= 4;
+			
+			//Check if we should stop
+			if (ptx->ypos_line[1] != 0)
+			{
+				if (ptx->ypos_line[0] == 0)
+				{
+					//Stopped on line 0
+					CortBox2(&rcLine, 0x000000, SURFACE_ID_TEXT1);
+					ptx->ypos_line[1] = 20;
+					ptx->line++;
+					ptx->mode = 2;
+				}
+			}
+			else
+			{
+				//Stopped on line 1
+				CortBox2(&rcLine, 0x000000, SURFACE_ID_TEXT0);
+				ptx->ypos_line[0] = 20;
+				ptx->line++;
+				ptx->mode = 2;
+			}
+			return 0;
+		case 5:
+			//Wait until Z is pressed before resuming execution
+			if (gKeyTrg & KEY_Z)
+				ptx->mode = 4;
+			return 0;
+		case 6:
+			//Wait until Z is pressed before resuming execution
+			if (gKeyTrg & KEY_Z)
+			{
+				ptx->wait = 0;
+				ptx->line = 0;
+				ptx->ypos_line[0] = 0;
+				ptx->ypos_line[1] = 20;
+				ptx->p_write = 0;
+				CortBox2(&rcLine, 0x000000, SURFACE_ID_TEXT0);
+				CortBox2(&rcLine, 0x000000, SURFACE_ID_TEXT1);
+				ptx->mode = 2;
+			}
+			return 0;
+		case 7:
+			//Wait until Z is pressed before ending the script
+			if (!(gKeyTrg & KEY_Z))
+				return 0;
+			ptx->mode = 0;
+			ptx->msg_box = 0;
+			return 0;
+		case 8:
+			//End script
+			ptx->mode = 0;
+			ptx->msg_box = 0;
+			return 0;
+		case 9:
+			//Draw Yes/No selection
+			PutBitmap3(&grcFull, 96 * ptx->select + 79, 93, &rcYNSel, SURFACE_ID_YESNO);
+			PutBitmap3(&grcFull, 88, 100, &rcYNYes, SURFACE_ID_YESNO);
+			PutBitmap3(&grcFull, 184, 100, &rcYNNo, SURFACE_ID_YESNO);
+			
+			//Choose Yes/No
+			if (gKeyTrg & KEY_LEFT)
+			{
+				ptx->select = 0;
+				PlaySoundObject(6, 1);
+			}
+			if (gKeyTrg & KEY_RIGHT)
+			{
+				ptx->select = 1;
+				PlaySoundObject(6, 1);
+			}
+			
+			//Select once Z is pressed
+			if (gKeyTrg & KEY_Z)
+			{
+				PlaySoundObject(1, 1);
+				if (ptx->select)
+				{
+					//No
+					ptx->p_read += 4;
+					ptx->wait = 0;
+					ptx->line = 0;
+					ptx->ypos_line[0] = 0;
+					ptx->ypos_line[1] = 20;
+					ptx->p_write = 0;
+					CortBox2(&rcLine, 0x000000, SURFACE_ID_TEXT0);
+					CortBox2(&rcLine, 0x000000, SURFACE_ID_TEXT1);
+					ptx->mode = 2;
+				}
+				else
+				{
+					//Yes
+					ptx->event_no = GetEventScriptNo(ptx);
+					ptx->mode = 1;
+				}
+			}
+			return 0;
+		default:
+			return 0;
+	};
+	
+	//Parse script
+	short x, y;
+
+	while (ptx->p_read < ptx->size)
+	{
+		//Skip past this specific character
+		if (ptx->data[ptx->p_read] == '~')
+			ptx->p_read++;
+		
+		//Print Shift-JIS
+		if (ptx->data[ptx->p_read] & 0x80)
+		{
+			//Type wait
+			ptx->msg_box = 1;
+			ptx->wait = ptx->x1C;
+			if (gKey & KEY_Z)
+				ptx->wait = 0;
+			
+			//Type character
+			c[0] = ptx->data[ptx->p_read];
+			c[1] = ptx->data[ptx->p_read + 1];
+			PlaySoundObject(8, 1);
+			PutText2((8 * ptx->p_write) + 1, 1, c, 0xFF0000, SURFACE_ID_TEXT0 + (ptx->line % 2));
+			PutText2(8 * ptx->p_write, 0, c, 0xFFFFFF, SURFACE_ID_TEXT0 + (ptx->line % 2));
+			ptx->p_write += 2;
+			ptx->p_read += 2;
+			return 0;
+		}
+		
+		//Print English alphabet
+		if (ptx->data[ptx->p_read] >= 'A' && ptx->data[ptx->p_read] <= 'z')
+		{
+			//Type wait
+			ptx->msg_box = 1;
+			ptx->wait = ptx->x1C;
+			if (gKey & KEY_Z)
+				ptx->wait = 0;
+			
+			//Type character
+			c[0] = ptx->data[ptx->p_read];
+			c[1] = 0;
+			PlaySoundObject(8, 1);
+			PutText2((8 * ptx->p_write) + 1, 1, c, 0xFF0000, SURFACE_ID_TEXT0 + (ptx->line % 2));
+			PutText2(8 * ptx->p_write, 0, c, 0xFFFFFF, SURFACE_ID_TEXT0 + (ptx->line % 2));
+			ptx->p_write++;
+			ptx->p_read++;
+			return 0;
+		}
+		
+		//Print English numbers
+		if (ptx->data[ptx->p_read] >= '0' && ptx->data[ptx->p_read] <= '9')
+		{
+			//Type wait
+			ptx->msg_box = 1;
+			ptx->wait = ptx->x1C;
+			if (gKey & KEY_Z)
+				ptx->wait = 0;
+			
+			//Type character
+			c[0] = ptx->data[ptx->p_read];
+			c[1] = 0;
+			PlaySoundObject(8, 1);
+			PutText2((8 * ptx->p_write) + 1, 1, c, 0xFF0000, SURFACE_ID_TEXT0 + (ptx->line % 2));
+			PutText2(8 * ptx->p_write, 0, c, 0xFFFFFF, SURFACE_ID_TEXT0 + (ptx->line % 2));
+			ptx->p_write++;
+			ptx->p_read++;
+			return 0;
+		}
+		
+		//Handle specific characters
+		switch (ptx->data[ptx->p_read])
+		{
+			case ',':
+			case '.':
+			case '/':
+				//Type wait
+				ptx->msg_box = 1;
+				ptx->wait = ptx->x1C;
+				if (gKey & KEY_Z)
+					ptx->wait = 0;
+				
+				//Type character
+				c[0] = ptx->data[ptx->p_read];
+				c[1] = 0;
+				PlaySoundObject(8, 1);
+				PutText2((8 * ptx->p_write) + 1, 1, c, 0xFF0000, SURFACE_ID_TEXT0 + (ptx->line % 2));
+				PutText2(8 * ptx->p_write, 0, c, 0xFFFFFF, SURFACE_ID_TEXT0 + (ptx->line % 2));
+				ptx->p_write++;
+				ptx->p_read++;
+				return 0;
+			case '+':
+				//Skip character
+				ptx->wait = ptx->x1C;
+				ptx->p_read += 2;
+				ptx->wait = 0; //lol
+				
+				//Start scrolling / go to next line
+				ptx->p_write = 0;
+				if ((ptx->line % 2) || ptx->ypos_line[1] != 0)
+				{
+					if ((ptx->line % 2) != 1 || ptx->ypos_line[0] != 0)
+						++ptx->line;
+					else
+						ptx->mode = 5;
+				}
+				else
+				{
+					ptx->mode = 5;
+				}
+				return 0;
+			case '{':
+				//'NOD'
+				ptx->p_read += 2;
+				ptx->mode = 6;
+				return 0;
+		}
+
+		//Handle commands
+		if (IS_COMMAND('f','+'))
+		{
+			//Set flag
+			ptx->p_read += 3;
+			x = GetEventScriptNo(ptx);
+			SetNPCFlag(x);
+			return 0;
+		}
+		if (IS_COMMAND('f','-'))
+		{
+			//Clear flag
+			ptx->p_read += 3;
+			x = GetEventScriptNo(ptx);
+			CutNPCFlag(x);
+			return 0;
+		}
+		if (IS_COMMAND('f','j'))
+		{
+			//Check if flag is set
+			ptx->p_read += 3;
+			x = GetEventScriptNo(ptx);
+			if (GetNPCFlag(x) == TRUE)
+			{
+				//Jump to event given
+				ptx->p_read++;
+				ptx->event_no = GetEventScriptNo(ptx);
+				ptx->mode = 1;
+			}
+			else
+			{
+				//Continue without jumping
+				ptx->p_read += 5;
+			}
+			return 0;
+		}
+		if (IS_COMMAND('i','+'))
+		{
+			//Give item
+			ptx->p_read += 3;
+			x = GetEventScriptNo(ptx);
+			AddItemData(items, (char)x);
+			return 0;
+		}
+		if (IS_COMMAND('i','-'))
+		{
+			//Remove item
+			ptx->p_read += 3;
+			x = GetEventScriptNo(ptx);
+			SubItemData(items, (char)x);
+			return 0;
+		}
+		if (IS_COMMAND('i','j'))
+		{
+			//Check if we have requested item
+			ptx->p_read += 3;
+			x = GetEventScriptNo(ptx);
+			if (CheckItem(items, (char)x) == TRUE)
+			{
+				//Jump to event given
+				ptx->p_read++;
+				ptx->event_no = GetEventScriptNo(ptx);
+				ptx->mode = 1;
+			}
+			else
+			{
+				//Continue without jumping
+				ptx->p_read += 5;
+			}
+			return 0;
+		}
+		if (IS_COMMAND('p','c'))
+		{
+			//Modify map
+			ptx->p_read += 3;
+			x = GetEventScriptNo(ptx);
+			ptx->p_read++;
+			y = GetEventScriptNo(ptx);
+			ptx->p_read++;
+			map->data[x + map->width * y] = (BYTE)GetEventScriptNo(ptx);
+			return 0;
+		}
+		if (IS_COMMAND('c','m'))
+		{
+			//Get arguments
+			ptx->p_read += 3;
+			int z = GetEventScriptNo(ptx);
+			ptx->p_read++;
+			x = GetEventScriptNo(ptx);
+			ptx->p_read++;
+			y = GetEventScriptNo(ptx);
+			ptx->p_read++;
+
+			//Set NPC
+			short xm = x - (npc[z].x / 16 / 0x400);
+			short ym = y - (npc[z].y / 16 / 0x400);
+			npc[z].x = x << 14;
+			npc[z].y = y << 14;
+			npc[z].tgt_x += xm << 14;
+			npc[z].tgt_y += ym << 14;
+		}
+		if (IS_COMMAND('s','e'))
+		{
+			//Play requested sound
+			ptx->p_read += 3;
+			x = GetEventScriptNo(ptx);
+			PlaySoundObject(x, 1);
+			return 0;
+		}
+		if (IS_COMMAND('w','a'))
+		{
+			//Wait requested time
+			ptx->p_read += 3;
+			ptx->wait = GetEventScriptNo(ptx);
+			return 0;
+		}
+		if (IS_COMMAND('e','k'))
+		{
+			//Quake
+			ptx->p_read += 3;
+			fade->wait = 0;
+			fade->mode = FADE_MODE_QUAKE;
+			return 0;
+		}
+		if (IS_COMMAND('l','e'))
+		{
+			//Quake 2
+			ptx->p_read += 3;
+			fade->wait = 0;
+			fade->mode = FADE_MODE_QUAKE2;
+			return 0;
+		}
+		if (IS_COMMAND('f','o'))
+		{
+			//Fade out
+			ptx->p_read += 3;
+			fade->wait = 0;
+			fade->mode = FADE_MODE_FADEOUT;
+			return 0;
+		}
+		if (IS_COMMAND('f','i'))
+		{
+			//Fade in
+			ptx->p_read += 3;
+			fade->wait = 0;
+			fade->mode = FADE_MODE_FADEIN;
+			return 0;
+		}
+		if (IS_COMMAND('m','a'))
+		{
+			//Fade mask
+			ptx->p_read += 3;
+			fade->mask = TRUE;
+			return 0;
+		}
+		if (IS_COMMAND('n','m'))
+		{
+			//Fade unmask
+			ptx->p_read += 3;
+			fade->mask = FALSE;
+			return 0;
+		}
+		if (IS_COMMAND('y','n'))
+		{
+			//Start Yes/No dialogue
+			ptx->p_read += 3;
+			ptx->select = 0;
+			ptx->mode = 9;
+			PlaySoundObject(14, 1);
+			return 0;
+		}
+		if (IS_COMMAND('t','e'))
+		{
+			ptx->mode = 7;
+			return 0;
+		}
+		if (IS_COMMAND('e','n'))
+		{
+			ptx->mode = 8;
+			return 0;
+		}
+		if (IS_COMMAND('e','x'))
+		{
+			return 1;
+		}
+		if (ptx->data[ptx->p_read] == '<' && ptx->data[ptx->p_read + 1] == '*')
+			return 3;
+		++ptx->p_read;
+	}
+	
+	//End script
+	ptx->mode = 8;
+	return 0;
+}
+
 void PutMsgBox(EVENT_SCR *ptx)
 {
 	static RECT rcMsgBox = { 0, 0, 300, 48 };
@@ -238,8 +718,8 @@ void PutMsgBox(EVENT_SCR *ptx)
 	{
 		++ptx->ani_cursor;
 		PutBitmap3(&grcFull, (SURFACE_WIDTH / 2) - 152, SURFACE_HEIGHT - 56, &rcMsgBox, SURFACE_ID_MSGBOX);
-		PutBitmap3(&grcLineClip, (SURFACE_WIDTH / 2) - 136, (SURFACE_HEIGHT - 50) + ptx->ypos_line[0], &grcLine, SURFACE_ID_TEXT0);
-		PutBitmap3(&grcLineClip, (SURFACE_WIDTH / 2) - 136, (SURFACE_HEIGHT - 50) + ptx->ypos_line[1], &grcLine, SURFACE_ID_TEXT1);
+		PutBitmap3(&rcLineClip, (SURFACE_WIDTH / 2) - 136, (SURFACE_HEIGHT - 50) + ptx->ypos_line[0], &rcLine, SURFACE_ID_TEXT0);
+		PutBitmap3(&rcLineClip, (SURFACE_WIDTH / 2) - 136, (SURFACE_HEIGHT - 50) + ptx->ypos_line[1], &rcLine, SURFACE_ID_TEXT1);
 		if (ptx->mode == 5 || ptx->mode == 6 || ptx->mode == 7)
 			PutEventScriptCursor(ptx);
 	}
@@ -248,13 +728,13 @@ void PutMsgBox(EVENT_SCR *ptx)
 void InitEventScript(EVENT_SCR *ptx)
 {
 	ptx->mode = 0;
-	ptx->x8 = 0;
+	ptx->msg_box = 0;
 	ptx->event_no = 0;
 	ptx->ani_cursor = 0;
-	ptx->x1A = 0;
+	ptx->wait = 0;
 	ptx->x1C = 4;
 	ptx->line = 0;
 	ptx->ypos_line[0] = 0;
 	ptx->ypos_line[1] = 20;
-	ptx->x21 = 0;
+	ptx->p_write = 0;
 }

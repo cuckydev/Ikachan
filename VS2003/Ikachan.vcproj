@@ -140,6 +140,9 @@
 				RelativePath="..\Ikachan\Map.cpp">
 			</File>
 			<File
+				RelativePath="..\Ikachan\NpChar.cpp">
+			</File>
+			<File
 				RelativePath="..\Ikachan\Opening.cpp">
 			</File>
 			<File
@@ -185,6 +188,9 @@
 			</File>
 			<File
 				RelativePath="..\Ikachan\Map.h">
+			</File>
+			<File
+				RelativePath="..\Ikachan\NpChar.h">
 			</File>
 			<File
 				RelativePath="..\Ikachan\Opening.h">

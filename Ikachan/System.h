@@ -26,6 +26,9 @@ enum WND_SIZE
 };
 extern WND_SIZE gWndSize;
 
+//Windows objects
+extern HWND ghWnd;
+
 //Filepath
 extern TCHAR gModulePath[MAX_PATH];
 

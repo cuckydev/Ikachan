@@ -19,7 +19,7 @@ short gMycLife[MAX_LEVEL] = { 4, 8, 12, 18, 26, 34, 62 };
 short gMycExp[MAX_LEVEL] = { 8, 28, 52, 74, 102, 360, 852 };
 
 //Draw MyChar
-void PutMyChar()
+void PutMyChar(FRAME *frame)
 {
 	static RECT rcMyChar[12] = {
 		{  0,  0, 16, 16 },
@@ -36,8 +36,8 @@ void PutMyChar()
 		{ 48, 32, 64, 48 },
 	};
 	
-	BYTE frame = (gMC.direct * 4) + gMC.ani_no;
-	PutBitmap3(&grcFull, (gMC.x / 0x400) - 8, (gMC.y / 0x400) - 8, &rcMyChar[frame], SURFACE_ID_MYCHAR2);
+	BYTE frame_no = (gMC.direct * 4) + gMC.ani_no;
+	PutBitmap3(&grcFull, (gMC.x / 0x400) - (frame->x / 0x400) - 8, (gMC.y / 0x400) - (frame->y / 0x400) - 8, &rcMyChar[frame_no], SURFACE_ID_MYCHAR2);
 }
 
 void PutMyStatus()
@@ -85,7 +85,7 @@ void ActMyChar_Normal()
 	}
 
 	//Dash
-	if ((gKey & KEY_Z) && TRUE)//(gMC.equip & 2))
+	if ((gKey & KEY_Z) && (gMC.equip & 2))
 	{
 		//Play charged sound
 		if (gMC.dash_wait == 31)
@@ -146,7 +146,7 @@ void ActMyChar_Normal()
 	if (gMC.xm < 0)
 		gMC.xm += 8;
 	
-	if (!gMC.x27)
+	if (!gMC.airborne)
 	{
 		if (gMC.xm > 0)
 			gMC.xm -= 24;
@@ -160,10 +160,10 @@ void ActMyChar_Normal()
 	gMC.y += gMC.ym;
 
 	//Decrement timers
-	if (gMC.x18)
-		--gMC.x18;
-	if (gMC.x1A)
-		--gMC.x1A;
+	if (gMC.shock)
+		--gMC.shock;
+	if (gMC.no_event)
+		--gMC.no_event;
 }
 
 void ActMyChar_Dash()
@@ -180,8 +180,8 @@ void ActMyChar_Dash()
 	gMC.ani_no = 3;
 
 	//Decrement timers
-	if (gMC.x18)
-		--gMC.x18;
+	if (gMC.shock)
+		--gMC.shock;
 }
 
 void ActMyChar_Ship()
@@ -199,22 +199,22 @@ void InitMyChar()
 {
 	gMC.cond = 1;
 	gMC.equip = 0;
-	gMC.x1 = 0;
+	gMC.dead = 0;
 	gMC.level = 0;
 	gMC.life = gMycLife[0];
 	gMC.exp = 0;
-	gMC.x = 0;//0xA0000;
-	gMC.y = 0;//0x1A0000;
+	gMC.x = 0xA0000;
+	gMC.y = 0x1A0000;
 	gMC.ym = 0;
 	gMC.xm = 0;
-	gMC.x27 = 1;
+	gMC.airborne = 1;
 	gMC.ani_wait = 0;
 	gMC.ani_no = 0;
 	gMC.direct = 0;
-	gMC.x28 = 0;
+	gMC.flag = 0;
 	gMC.unit = 0;
-	gMC.x18 = 0;
-	gMC.x1A = 100;
+	gMC.shock = 0;
+	gMC.no_event = 100;
 	gMC.dash_wait = 0;
 	gMC.swim_wait = 0;
 	gMC.x29 = 0;
