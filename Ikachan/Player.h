@@ -26,7 +26,7 @@ struct MYCHAR
 	char direct; //x26 x420DFE
 	BOOLEAN airborne; //x27 x420DFF
 	BYTE flag; //x28 x420EE0
-	char x29; //x29 x420EE1
+	char carry; //x29 x420EE1
 };
 
 extern MYCHAR gMC;

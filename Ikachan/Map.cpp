@@ -189,7 +189,7 @@ void PutMapVector(MAP *map, int fx, int fy)
 }
 
 //Frame
-void MoveFrame(FRAME *frame, MAP *map)
+void MoveFrame(FRAME *frame, NPCHAR *npc, MAP *map)
 {
 	//Get target position
 	int tx, ty;
@@ -201,7 +201,8 @@ void MoveFrame(FRAME *frame, MAP *map)
 			ty = gMC.y;
 			break;
 		case FRAME_MODE_NPCHAR:
-			//TODO
+			tx = npc[frame->npc].x;
+			ty = npc[frame->npc].y;
 			break;
 		case FRAME_MODE_BOSS:
 			//TODO

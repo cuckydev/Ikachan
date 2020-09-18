@@ -3,6 +3,7 @@
 #include "Item.h"
 #include "Draw.h"
 #include "Flags.h"
+#include "PixelScript.h"
 #include "EventScript.h"
 #include "Opening.h"
 #include "Map.h"
@@ -66,9 +67,12 @@ DWORD CountFramePerSecound()
 enum GAMEMODE
 {
 	GAMEMODE_OPENING,
-	GAMEMODE_EDITOR = 2,
+	GAMEMODE_GAMEPLAY,
+	GAMEMODE_EDITOR,
+	GAMEMODE_INVENTORY,
 	GAMEMODE_INTRO = 5,
-	GAMEMODE_LOAD = 6,
+	GAMEMODE_LOAD,
+	GAMEMODE_STAFF,
 };
 
 BOOL Game(HWND hWnd)
@@ -79,6 +83,7 @@ BOOL Game(HWND hWnd)
 	FADE fade;
 	ITEMS items;
 	EVENT_SCR event_scr;
+	PIX_SCR pix_scr;
 	MAP map;
 	NPCHAR npc[MAX_NPCS];
 	FRAME frame;
@@ -173,13 +178,134 @@ BOOL Game(HWND hWnd)
 		if (!Flip_SystemTask(hWnd))
 			return TRUE;
 	}
-
+	
 	//Prepare for intro
 	if (gKey & KEY_S)
 		mode = GAMEMODE_EDITOR;
 	if (mode == GAMEMODE_INTRO)
 	{
-
+		//Run new game event when game starts
+		event_scr.event_no = 2;
+		event_scr.mode = 1;
+	}
+	
+	//Load intro script
+	sprintf(path, "%s\\%s", gModulePath, "Words.ptx");
+	LoadPixelScript(&pix_scr, path, 2);
+	
+	//Intro
+	while (mode == GAMEMODE_INTRO)
+	{
+		//Start frame
+		tick = GetTickCount();
+		GetTrg();
+		CortBox(&grcFull, 0x00FFFF);
+		
+		//Run Pixel Script
+		if (PixelScriptProc(&pix_scr, FALSE) == 1)
+		{
+			//Start gameplay
+			mode = GAMEMODE_GAMEPLAY;
+			fade.mask = TRUE;
+		}
+		
+		//End frame
+		if (!Flip_SystemTask(hWnd))
+			return TRUE;
+	}
+	EndPixelScript(&pix_scr);
+	
+	//Gameplay
+	while (mode == GAMEMODE_GAMEPLAY)
+	{
+		//Start frame
+		tick = GetTickCount();
+		GetTrg();
+		CortBox(&grcFull, 0x000000);
+		
+		//Update frame position
+		MoveFrame(&frame, npc, &map);
+		if (gKeyTrg & KEY_X)
+			gMC.x += 0x200; //Move Ikachan right half a pixel when X is pressed (not sure why)
+		
+		//Draw background
+		PutBack(&frame);
+		PutMapBack(&map, frame.x, frame.y);
+		
+		//Update and draw Ikachan
+		if (gMC.cond)
+		{
+			if (event_scr.msg_box == FALSE)
+				ActMyChar();
+			if ((gMC.shock % 2) == 0 || event_scr.msg_box == TRUE)
+				PutMyChar(&frame);
+		}
+		
+		//Run death event when Ikachan dies
+		if (gMC.dead)
+		{
+			gMC.dead = 0;
+			event_scr.mode = 1;
+			event_scr.event_no = 6;
+		}
+		
+		//Draw foreground
+		PutMapFront(&map, frame.x, frame.y);
+		PutMapVector(&map, frame.x, frame.y);
+		
+		//Run event
+		ProcFade(&fade, &frame);
+		switch (EventScriptProc(&event_scr, &items, npc, &map, &fade, &frame))
+		{
+			case 1:
+				return TRUE;
+			case 3:
+				mode = GAMEMODE_STAFF;
+				break;
+			default:
+				break;
+		}
+		PutMsgBox(&event_scr);
+		
+		//Open inventory and draw status
+		if (gKeyTrg & KEY_S)
+		{
+			mode = GAMEMODE_INVENTORY;
+		}
+		PutMyStatus();
+		
+		//Play end cutscene when Ikachan exits the top of the screen
+		if (gMC.y < -0x8000 && !event_scr.msg_box)
+		{
+			event_scr.msg_box = 1;
+			event_scr.event_no = 4000;
+			event_scr.mode = 1;
+		}
+		
+		//End frame
+		PutNumber(SURFACE_WIDTH - 48, 0, CountFramePerSecound());
+		if (!Flip_SystemTask(hWnd))
+			return TRUE;
+	}
+	
+	//Load staff script
+	sprintf(path, "%s\\%s", gModulePath, "Staff.ptx");
+	LoadPixelScript(&pix_scr, path, 4);
+	
+	//Staff
+	while (mode == GAMEMODE_STAFF)
+	{
+		//Start frame
+		tick = GetTickCount();
+		GetTrg();
+		CortBox(&grcFull, 0x000000);
+		
+		//Run Pixel Script
+		PixelScriptProc(&pix_scr, TRUE);
+		
+		//End frame
+		if (!Flip_SystemTask(hWnd))
+			return TRUE;
 	}
 	return FALSE;
 }

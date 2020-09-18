@@ -1,4 +1,5 @@
 #pragma once
+#include "NpChar.h"
 #include <windows.h>
 
 struct MAP
@@ -27,5 +28,5 @@ void PutBack(FRAME *frame);
 void PutMapBack(MAP *map, int fx, int fy);
 void PutMapFront(MAP *map, int fx, int fy);
 void PutMapVector(MAP *map, int fx, int fy);
-void MoveFrame(FRAME *frame, MAP *map);
+void MoveFrame(FRAME *frame, NPCHAR *npc, MAP *map);
 void MoveFrameEditor(FRAME *frame, MAP *map);

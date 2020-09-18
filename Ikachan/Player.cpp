@@ -217,5 +217,5 @@ void InitMyChar()
 	gMC.no_event = 100;
 	gMC.dash_wait = 0;
 	gMC.swim_wait = 0;
-	gMC.x29 = 0;
+	gMC.carry = 0;
 }

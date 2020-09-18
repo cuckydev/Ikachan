@@ -1,6 +1,7 @@
 #include "Generic.h"
 #include "Draw.h"
 #include "Sound.h"
+#include "PixelScript.h"
 #include <stdio.h>
 
 void GetCompileDate(int *year, int *month, int *day)
@@ -148,15 +149,15 @@ void LoadGenericData()
 	MakeSurface_File("Pbm\\NpcType.pbm", SURFACE_ID_NPCTYPE);
 	MakeSurface_File("Pbm\\Opening.pbm", SURFACE_ID_OPENING);
 	MakeSurface_File("Pbm\\MaruAme.pbm", SURFACE_ID_MARUAME);
-	MakeSurface_File("Pbm\\Staff.pbm", 24);
-	MakeSurface_File("Pbm\\End.pbm", 23);
+	MakeSurface_File("Pbm\\Staff.pbm", SURFACE_ID_STAFF);
+	MakeSurface_File("Pbm\\End.pbm", SURFACE_ID_END);
 
 	//Make generic surfaces
-	MakeSurface_Generic(SURFACE_WIDTH, SURFACE_HEIGHT, 19);
-	MakeSurface_Generic(272, 16, 6);
-	MakeSurface_Generic(272, 16, 7);
-	for (int i = 0; i < 11; ++i)
-		MakeSurface_Generic(320, 16, i + SURFACE_ID_WORDS0);
+	MakeSurface_Generic(SURFACE_WIDTH, SURFACE_HEIGHT, SURFACE_ID_BACKUP);
+	MakeSurface_Generic(272, 16, SURFACE_ID_TEXT0);
+	MakeSurface_Generic(272, 16, SURFACE_ID_TEXT1);
+	for (int i = 0; i < MAX_PSLINES; i++)
+		MakeSurface_Generic(SURFACE_WIDTH, 16, i + SURFACE_ID_WORDS0);
 
 	//Load sounds
 	InitSoundObject("DASH", SOUND_ID_DASH);

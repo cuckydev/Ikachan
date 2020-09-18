@@ -3,6 +3,7 @@
 #include "System.h"
 #include "Sound.h"
 #include "Flags.h"
+#include "Player.h"
 #include <stdio.h>
 
 #define IS_COMMAND(c1, c2) (ptx->data[ptx->p_read] == '<' && ptx->data[ptx->p_read + 1] == (c1) && ptx->data[ptx->p_read + 2] == (c2))
@@ -186,7 +187,7 @@ BOOL ReadEventScript(LPCTSTR path, EVENT_SCR *ptx)
 	CloseHandle(hFile);
 	
 	//Allocate data
-	ptx->data = (char*)LocalAlloc(LPTR, ptx->size + 1);
+	ptx->data = (LPSTR)LocalAlloc(LPTR, ptx->size + 1);
 	
 	//Open file
 	FILE *fp = fopen(path, "rt");
@@ -352,10 +353,10 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, FADE *
 			ptx->msg_box = 0;
 			return 0;
 		case 9:
-			//Draw Yes/No selection
-			PutBitmap3(&grcFull, 96 * ptx->select + 79, 93, &rcYNSel, SURFACE_ID_YESNO);
-			PutBitmap3(&grcFull, 88, 100, &rcYNYes, SURFACE_ID_YESNO);
-			PutBitmap3(&grcFull, 184, 100, &rcYNNo, SURFACE_ID_YESNO);
+			//Draw Yes/No dialogue
+			PutBitmap3(&grcFull, ((SURFACE_WIDTH / 2) - 81) + (ptx->select * 96), (SURFACE_HEIGHT / 2) - 27, &rcYNSel, SURFACE_ID_YESNO);
+			PutBitmap3(&grcFull, (SURFACE_WIDTH / 2) - 72, (SURFACE_HEIGHT / 2) - 20, &rcYNYes, SURFACE_ID_YESNO);
+			PutBitmap3(&grcFull, (SURFACE_WIDTH / 2) + 24, (SURFACE_HEIGHT / 2) - 20, &rcYNNo, SURFACE_ID_YESNO);
 			
 			//Choose Yes/No
 			if (gKeyTrg & KEY_LEFT)
@@ -447,7 +448,7 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, FADE *
 			return 0;
 		}
 		
-		//Print English numbers
+		//Print English numerals
 		if (ptx->data[ptx->p_read] >= '0' && ptx->data[ptx->p_read] <= '9')
 		{
 			//Type wait
@@ -686,22 +687,198 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, FADE *
 			PlaySoundObject(14, 1);
 			return 0;
 		}
+		if (IS_COMMAND('m','c'))
+		{
+			//Close message box
+			ptx->p_read += 3;
+			ptx->msg_box = FALSE;
+			return 0;
+		}
+		if (IS_COMMAND('y','n'))
+		{
+			//Start Yes/No dialogue
+			ptx->p_read += 3;
+			ptx->select = 0;
+			ptx->mode = 9;
+			PlaySoundObject(14, 1);
+			return 0;
+		}
+		if (IS_COMMAND('d','s'))
+		{
+			//Save game
+			PlaySoundObject(13, 1);
+			//SaveRecord(&items->code, &map->data, npc);
+			ptx->p_read += 3;
+			return 0;
+		}
+		if (IS_COMMAND('d','l'))
+		{
+			//Load game
+			PlaySoundObject(13, 1);
+			if (FALSE)//LoadRecord(&items->code, &map->data, npc))
+			{
+				//Start from loaded game
+				gMC.no_event = 100;
+				ptx->p_read += 3;
+				return 2;
+			}
+			else
+			{
+				//Failed to load
+				ptx->p_read += 3;
+				return 1;
+			}
+		}
+		if (IS_COMMAND('n','l'))
+		{
+			//sub_4046B0((int)a3);
+			gMC.no_event = 100;
+			ptx->p_read += 3;
+			return 0;
+		}
+		if (IS_COMMAND('c','e'))
+		{
+			//LoadEvent((int)a3);
+			//sub_401000();
+			ptx->p_read += 3;
+			return 0;
+		}
+		if (IS_COMMAND('e','+'))
+		{
+			//Restore Ikachan's health
+			gMC.life = gMycLife[gMC.level];
+			ptx->p_read += 3;
+			PlaySoundObject(12, 1);
+			return 0;
+		}
+		if (IS_COMMAND('g','e'))
+		{
+			//Escape in ship
+			gMC.unit = 2;
+			gMC.direct = 2;
+			fade->mode = 0;
+			ptx->p_read += 3;
+			PlaySoundObject(12, 1);
+			return 0;
+		}
+		if (IS_COMMAND('r','e'))
+		{
+			//Restart
+			gMC.carry = 0;
+			gMC.cond = 1;
+			gMC.unit = 0;
+			gMC.ani_no = 0;
+			gMC.ani_wait = 0;
+			gMC.shock = 0;
+			gMC.no_event = 100;
+			gMC.ym = 0;
+			gMC.xm = 0;
+			gMC.life = gMycLife[gMC.level];
+			ptx->p_read += 3;
+			return 0;
+		}
+		if (IS_COMMAND('e','c'))
+		{
+			//Add 1 to 'people carried count'
+			gMC.carry++;
+			ptx->p_read += 3;
+			return 0;
+		}
+		if (IS_COMMAND('e','j'))
+		{
+			//Check if we're carrying the right amount of people
+			ptx->p_read += 3;
+			if (gMC.carry == GetEventScriptNo(ptx))
+			{
+				//Jump to event given
+				ptx->p_read++;
+				ptx->event_no = GetEventScriptNo(ptx);
+				ptx->mode = 1;
+			}
+			else
+			{
+				//Continue without jumping
+				ptx->p_read += 5;
+			}
+			return 0;
+		}
+		if (IS_COMMAND('f','t'))
+		{
+			//Heal Ikachan and change frame focus
+			gMC.life = gMycLife[gMC.level];
+			ptx->p_read += 3;
+			frame->mode = (char)GetEventScriptNo(ptx);
+			ptx->p_read++;
+			frame->npc = GetEventScriptNo(ptx);
+			return 0;
+		}
+		if (IS_COMMAND('b','o'))
+		{
+			ptx->p_read += 3;
+			GetEventScriptNo(ptx);
+			//byte_41D88E = 1;
+			return 0;
+		}
+		if (IS_COMMAND('p','p'))
+		{
+			ptx->p_read += 3;
+			//*(_BYTE *)a5 = 2;
+			return 0;
+		}
+		if (IS_COMMAND('p','s'))
+		{
+			ptx->p_read += 3;
+			//*(_BYTE *)a5 = 3;
+			return 0;
+		}
+		if (IS_COMMAND('p','f'))
+		{
+			ptx->p_read += 3;
+			//*(_BYTE *)a5 = 4;
+			return 0;
+		}
+		if (IS_COMMAND('p','d'))
+		{
+			ptx->p_read += 3;
+			//*(_BYTE *)(a5 + 1) = GetEventScriptNo(a1);
+			//*(_BYTE *)a5 = 1;
+			//PutBitmap3(&grcFull, 144, 116, (int)&unk_41C630, SURFACE_ID_LOADING);
+			return 0;
+		}
+		if (IS_COMMAND('p','h'))
+		{
+			ptx->p_read += 3;
+			//*(_BYTE *)a5 = 5;
+			return 0;
+		}
+		if (IS_COMMAND('p','n'))
+		{
+			ptx->p_read += 3;
+			//*(_BYTE *)a5 = 6;
+			return 0;
+		}
 		if (IS_COMMAND('t','e'))
 		{
+			//'NOD', ends script
 			ptx->mode = 7;
 			return 0;
 		}
 		if (IS_COMMAND('e','n'))
 		{
+			//End script
 			ptx->mode = 8;
 			return 0;
 		}
 		if (IS_COMMAND('e','x'))
 		{
+			//Exit
 			return 1;
 		}
 		if (ptx->data[ptx->p_read] == '<' && ptx->data[ptx->p_read + 1] == '*')
+		{
+			//Start credits
 			return 3;
+		}
 		++ptx->p_read;
 	}
 	
