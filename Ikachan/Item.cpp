@@ -1,6 +1,9 @@
 #include "Item.h"
 #include "Draw.h"
 #include "Player.h"
+#include "EventScript.h"
+#include "Sound.h"
+#include "System.h"
 #include <string.h>
 
 BYTE item_equip[13] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x02, 0x00, 0x00, 0x08 };
@@ -36,6 +39,35 @@ void PutItem(ITEMS *items)
 	//Draw cursor
 	RECT rcCursor = {32, 0, 48, 16};
 	PutBitmap3(&grcFull, (SURFACE_WIDTH - (16 * MAX_ITEMS)) / 2 + (items->selected_item * 16), (SURFACE_HEIGHT / 2) + 16, &rcCursor, SURFACE_ID_CURSOR);
+}
+
+void MoveItem(ITEMS *items, EVENT_SCR *event_scr)
+{
+	//Move selection with left and right
+	if (gKeyTrg & KEY_LEFT)
+	{
+		PlaySoundObject(SOUND_ID_DASH, SOUND_MODE_PLAY);
+		if (--items->selected_item < 0)
+			items->selected_item = MAX_ITEMS - 1;
+	}
+	if (gKeyTrg & KEY_RIGHT)
+	{
+		PlaySoundObject(SOUND_ID_DASH, SOUND_MODE_PLAY);
+		if (++items->selected_item >= MAX_ITEMS)
+			items->selected_item = 0;
+	}
+	
+	//Display item description when Z is pressed
+	if (gKeyTrg & KEY_Z)
+	{
+		PlaySoundObject(SOUND_ID_DASH, SOUND_MODE_PLAY);
+		char code = items->code[items->selected_item];
+		if (code != 0)
+		{
+			event_scr->event_no = 2000 + code;
+			event_scr->mode = 1;
+		}
+	}
 }
 
 //Check, give, and remove items

@@ -832,7 +832,7 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, PIYOPI
 		if (IS_COMMAND('p','d'))
 		{
 			ptx->p_read += 3;
-			piyocont->track = GetEventScriptNo(ptx);
+			piyocont->track = (char)GetEventScriptNo(ptx);
 			piyocont->mode = 1;
 			PutBitmap3(&grcFull, (SURFACE_WIDTH / 2) - 16, (SURFACE_HEIGHT / 2) - 4, &grcLoading, SURFACE_ID_LOADING);
 			return 0;

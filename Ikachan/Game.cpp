@@ -10,6 +10,7 @@
 #include "Player.h"
 #include "NpChar.h"
 #include "PiyoPiyo.h"
+#include "PlaHitMap.h"
 #include <stdio.h>
 
 DWORD gKeyTrg, gMouseTrg, gMouseTrg2;
@@ -246,79 +247,122 @@ BOOL Game(HWND hWnd)
 	piyocont.mode = 1;
 	PiyoPiyoControl(&piyocont);
 	
-	//Gameplay
-	while (mode == GAMEMODE_GAMEPLAY)
+	//Enter game loop
+	while (mode != GAMEMODE_STAFF)
 	{
-		//Start frame
-		tick = GetTickCount();
-		PiyoPiyoControl(&piyocont);
-		GetTrg();
-		CortBox(&grcFull, 0x000000);
-		
-		//Update frame position
-		MoveFrame(&frame, npc, &map);
-		if (gKeyTrg & KEY_X)
-			gMC.x += 0x200; //Move Ikachan right half a pixel when X is pressed (not sure why)
-		
-		//Draw background
-		PutBack(&frame);
-		PutMapBack(&map, frame.x, frame.y);
-		
-		//Update and draw Ikachan
-		if (gMC.cond)
+		//Gameplay
+		while (mode == GAMEMODE_GAMEPLAY)
 		{
-			if (event_scr.msg_box == FALSE)
-				ActMyChar();
-			if ((gMC.shock % 2) == 0 || event_scr.msg_box == TRUE)
-				PutMyChar(&frame);
-		}
-		
-		//Run death event when Ikachan dies
-		if (gMC.dead)
-		{
-			gMC.dead = 0;
-			event_scr.mode = 1;
-			event_scr.event_no = 6;
-		}
-		
-		//Draw foreground
-		PutMapFront(&map, frame.x, frame.y);
-		PutMapVector(&map, frame.x, frame.y);
-		
-		//Run event
-		ProcFade(&fade, &frame);
-		switch (EventScriptProc(&event_scr, &items, npc, &map, &piyocont, &fade, &frame))
-		{
-			case 1:
+			//Start frame
+			tick = GetTickCount();
+			PiyoPiyoControl(&piyocont);
+			GetTrg();
+			CortBox(&grcFull, 0x000000);
+			
+			//Update frame position
+			MoveFrame(&frame, npc, &map);
+			if (gKeyTrg & KEY_X)
+				gMC.x += 0x200; //Move Ikachan right half a pixel when X is pressed (not sure why)
+			
+			//Draw background
+			PutBack(&frame);
+			PutMapBack(&map, frame.x, frame.y);
+			
+			//Update and draw Ikachan
+			if (gMC.cond)
+			{
+				//Update player
+				if (event_scr.msg_box == FALSE)
+					ActMyChar();
+				
+				//Player collision
+				if (gMC.unit != 2)
+				{
+					//sub_40B9F0((int)&v3, (int)&v12, v11);
+					HitMyCharMap(&map);
+				}
+				
+				//Draw player
+				if ((gMC.shock % 2) == 0 || event_scr.msg_box == TRUE)
+					PutMyChar(&frame);
+			}
+			
+			//Run death event when Ikachan dies
+			if (gMC.dead)
+			{
+				gMC.dead = 0;
+				event_scr.mode = 1;
+				event_scr.event_no = 6;
+			}
+			
+			//Draw foreground
+			PutMapFront(&map, frame.x, frame.y);
+			PutMapVector(&map, frame.x, frame.y);
+			
+			//Run event
+			ProcFade(&fade, &frame);
+			switch (EventScriptProc(&event_scr, &items, npc, &map, &piyocont, &fade, &frame))
+			{
+				case 1:
+					return TRUE;
+				case 3:
+					mode = GAMEMODE_STAFF;
+					break;
+				default:
+					break;
+			}
+			PutMsgBox(&event_scr);
+			
+			//Open inventory and draw status
+			if ((gKeyTrg & KEY_S) && event_scr.mode == 0)
+			{
+				BackupSurface(SURFACE_ID_BACKUP, &grcFull);
+				mode = GAMEMODE_INVENTORY;
+				items.selected_item = 0;
+			}
+			PutMyStatus();
+			
+			//Play end cutscene when Ikachan exits the top of the screen
+			if (gMC.y < -0x8000 && !event_scr.msg_box)
+			{
+				event_scr.msg_box = 1;
+				event_scr.event_no = 4000;
+				event_scr.mode = 1;
+			}
+			
+			//End frame
+			PutNumber(SURFACE_WIDTH - 48, 0, CountFramePerSecound());
+			if (!Flip_SystemTask(hWnd))
 				return TRUE;
-			case 3:
-				mode = GAMEMODE_STAFF;
-				break;
-			default:
-				break;
+			PiyoPiyoProc();
 		}
-		PutMsgBox(&event_scr);
 		
-		//Open inventory and draw status
-		if ((gKeyTrg & KEY_S) && event_scr.mode == 0)
+		//Inventory
+		while (mode == GAMEMODE_INVENTORY)
 		{
-			mode = GAMEMODE_INVENTORY;
+			//Start frame
+			tick = GetTickCount();
+			PiyoPiyoControl(&piyocont);
+			GetTrg();
+			CortBox(&grcFull, 0x000000);
+			
+			//Handle inventory
+			if (event_scr.mode == 0)
+				MoveItem(&items, &event_scr);
+			PutItem(&items);
+			if (gKeyTrg & KEY_S)
+				mode = GAMEMODE_GAMEPLAY;
+			
+			//Run event and draw status
+			EventScriptProc(&event_scr, &items, npc, &map, &piyocont, &fade, &frame);
+			PutMsgBox(&event_scr);
+			PutMyStatus();
+			
+			//End frame
+			if (!Flip_SystemTask(hWnd))
+				return TRUE;
+			PiyoPiyoProc();
 		}
-		PutMyStatus();
-		
-		//Play end cutscene when Ikachan exits the top of the screen
-		if (gMC.y < -0x8000 && !event_scr.msg_box)
-		{
-			event_scr.msg_box = 1;
-			event_scr.event_no = 4000;
-			event_scr.mode = 1;
-		}
-		
-		//End frame
-		PutNumber(SURFACE_WIDTH - 48, 0, CountFramePerSecound());
-		if (!Flip_SystemTask(hWnd))
-			return TRUE;
-		PiyoPiyoProc();
 	}
 	
 	//Play ending theme

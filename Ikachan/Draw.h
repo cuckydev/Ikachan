@@ -73,6 +73,7 @@ BOOL StartDirectDraw(HWND hWnd, WND_SIZE wndSize);
 void EndDirectDraw(HWND hWnd);
 BOOL MakeSurface_File(LPCTSTR name, int surf_no);
 BOOL MakeSurface_Generic(int bxsize, int bysize, int surf_no);
+void BackupSurface(int surf_no, const RECT *rect);
 void PutBitmap3(const RECT *rcView, int x, int y, const RECT *rect, int surf_no);
 void CortBox(const RECT *rect, DWORD col);
 void CortBox2(const RECT *rect, DWORD col, int surf_no);

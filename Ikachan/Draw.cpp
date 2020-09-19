@@ -248,6 +248,25 @@ BOOL MakeSurface_Generic(int bxsize, int bysize, int surf_no)
 	return TRUE;
 }
 
+//Backbuffer backup
+void BackupSurface(int surf_no, const RECT *rect)
+{
+	//Construct rect descriptor
+	DDBLTFX ddbltfx;
+	memset(&ddbltfx, 0, sizeof(DDBLTFX));
+	ddbltfx.dwSize = sizeof(DDBLTFX);
+	
+	//Magnify rect
+	RECT rcSet;
+	rcSet.left = rect->left * mag;
+	rcSet.top = rect->top * mag;
+	rcSet.right = rect->right * mag;
+	rcSet.bottom = rect->bottom * mag;
+	
+	//Blit backbuffer to destination surface
+	surf[surf_no]->Blt(&rcSet, backbuffer, &rcSet, DDBLT_WAIT, &ddbltfx);
+}
+
 //Bitmap
 void PutBitmap3(const RECT *rcView, int x, int y, const RECT *rect, int surf_no)
 {
