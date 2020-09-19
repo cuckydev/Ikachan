@@ -9,9 +9,12 @@
 #include "Map.h"
 #include "Player.h"
 #include "NpChar.h"
+#include "PiyoPiyo.h"
 #include <stdio.h>
 
 DWORD gKeyTrg, gMouseTrg, gMouseTrg2;
+
+RECT grcLoading = { 0, 0, 32, 8 };
 
 void GetTrg()
 {
@@ -87,6 +90,7 @@ BOOL Game(HWND hWnd)
 	MAP map;
 	NPCHAR npc[MAX_NPCS];
 	FRAME frame;
+	PIYOPIYO_CONTROL piyocont;
 	DWORD tick;
 	
 	//Load generic data
@@ -116,11 +120,17 @@ BOOL Game(HWND hWnd)
 	InitOpening(&opening);
 	char next_mode = mode;
 	
+	//Play opening music
+	piyocont.track = 3;
+	piyocont.mode = 1;
+	PiyoPiyoControl(&piyocont);
+	
 	//Opening
 	while (mode == GAMEMODE_OPENING)
 	{
 		//Start frame
 		tick = GetTickCount();
+		PiyoPiyoControl(&piyocont);
 		GetTrg();
 		CortBox(&grcFull, 0x000000);
 		
@@ -134,6 +144,7 @@ BOOL Game(HWND hWnd)
 		//End frame
 		if (!Flip_SystemTask(hWnd))
 			return TRUE;
+		PiyoPiyoProc();
 	}
 	
 	//Load map event and data
@@ -161,11 +172,12 @@ BOOL Game(HWND hWnd)
 	{
 		//Start frame
 		tick = GetTickCount();
+		PiyoPiyoControl(&piyocont);
 		GetTrg();
 		CortBox(&grcFull, 0x000000);
 		
 		//Run load script
-		if (EventScriptProc(&event_scr, &items, npc, &map, &fade, &frame) == 2)
+		if (EventScriptProc(&event_scr, &items, npc, &map, &piyocont, &fade, &frame) == 2)
 		{
 			event_scr.wait = 0;
 			event_scr.mode = 3;
@@ -177,6 +189,7 @@ BOOL Game(HWND hWnd)
 		//End frame
 		if (!Flip_SystemTask(hWnd))
 			return TRUE;
+		PiyoPiyoProc();
 	}
 	
 	//Prepare for intro
@@ -184,6 +197,11 @@ BOOL Game(HWND hWnd)
 		mode = GAMEMODE_EDITOR;
 	if (mode == GAMEMODE_INTRO)
 	{
+		//Play intro music
+		piyocont.track = 1;
+		piyocont.mode = 1;
+		PiyoPiyoControl(&piyocont);
+		
 		//Run new game event when game starts
 		event_scr.event_no = 2;
 		event_scr.mode = 1;
@@ -198,11 +216,12 @@ BOOL Game(HWND hWnd)
 	{
 		//Start frame
 		tick = GetTickCount();
+		PiyoPiyoControl(&piyocont);
 		GetTrg();
 		CortBox(&grcFull, 0x00FFFF);
 		
 		//Run Pixel Script
-		if (PixelScriptProc(&pix_scr, FALSE) == 1)
+		if (PixelScriptProc(&pix_scr, &piyocont, FALSE) == 1)
 		{
 			//Start gameplay
 			mode = GAMEMODE_GAMEPLAY;
@@ -212,14 +231,27 @@ BOOL Game(HWND hWnd)
 		//End frame
 		if (!Flip_SystemTask(hWnd))
 			return TRUE;
+		PiyoPiyoProc();
 	}
 	EndPixelScript(&pix_scr);
+	
+	//Draw loading screen
+	CortBox(&grcFull, 0x000000);
+	PutBitmap3(&grcFull, (SURFACE_WIDTH / 2) - 16, (SURFACE_HEIGHT / 2) - 4, &grcLoading, SURFACE_ID_LOADING);
+	if (!Flip_SystemTask(hWnd))
+		return TRUE;
+	
+	//Play theme song
+	piyocont.track = 0;
+	piyocont.mode = 1;
+	PiyoPiyoControl(&piyocont);
 	
 	//Gameplay
 	while (mode == GAMEMODE_GAMEPLAY)
 	{
 		//Start frame
 		tick = GetTickCount();
+		PiyoPiyoControl(&piyocont);
 		GetTrg();
 		CortBox(&grcFull, 0x000000);
 		
@@ -255,7 +287,7 @@ BOOL Game(HWND hWnd)
 		
 		//Run event
 		ProcFade(&fade, &frame);
-		switch (EventScriptProc(&event_scr, &items, npc, &map, &fade, &frame))
+		switch (EventScriptProc(&event_scr, &items, npc, &map, &piyocont, &fade, &frame))
 		{
 			case 1:
 				return TRUE;
@@ -268,7 +300,7 @@ BOOL Game(HWND hWnd)
 		PutMsgBox(&event_scr);
 		
 		//Open inventory and draw status
-		if (gKeyTrg & KEY_S)
+		if ((gKeyTrg & KEY_S) && event_scr.mode == 0)
 		{
 			mode = GAMEMODE_INVENTORY;
 		}
@@ -286,7 +318,13 @@ BOOL Game(HWND hWnd)
 		PutNumber(SURFACE_WIDTH - 48, 0, CountFramePerSecound());
 		if (!Flip_SystemTask(hWnd))
 			return TRUE;
+		PiyoPiyoProc();
 	}
+	
+	//Play ending theme
+	piyocont.track = 5;
+	piyocont.mode = 1;
+	PiyoPiyoControl(&piyocont);
 	
 	//Load staff script
 	sprintf(path, "%s\\%s", gModulePath, "Staff.ptx");
@@ -297,15 +335,17 @@ BOOL Game(HWND hWnd)
 	{
 		//Start frame
 		tick = GetTickCount();
+		PiyoPiyoControl(&piyocont);
 		GetTrg();
 		CortBox(&grcFull, 0x000000);
 		
 		//Run Pixel Script
-		PixelScriptProc(&pix_scr, TRUE);
+		PixelScriptProc(&pix_scr, &piyocont, TRUE);
 		
 		//End frame
 		if (!Flip_SystemTask(hWnd))
 			return TRUE;
+		PiyoPiyoProc();
 	}
 	return FALSE;
 }

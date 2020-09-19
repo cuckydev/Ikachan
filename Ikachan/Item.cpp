@@ -13,7 +13,7 @@ void InitItem(ITEMS *items)
 
 	//Reset item codes
 	for (int i = 0; i < MAX_ITEMS; i++)
-		items->code[i] = i + 1;
+		items->code[i] = 0;
 }
 
 void PutItem(ITEMS *items)

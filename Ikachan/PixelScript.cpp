@@ -48,7 +48,7 @@ void LoadPixelScript(PIX_SCR *ptx, LPCTSTR path, char scale)
 	DebugPutText(ptx->data);
 }
 
-int PixelScriptProc(PIX_SCR *ptx, BOOL ending)
+int PixelScriptProc(PIX_SCR *ptx, PIYOPIYO_CONTROL *piyocont, BOOL ending)
 {
 	TCHAR c[44];
 	
@@ -104,7 +104,7 @@ int PixelScriptProc(PIX_SCR *ptx, BOOL ending)
 					{
 						//Fade PiyoPiyo
 						ptx->p_read += 4;
-						//*(_BYTE *)a2 = 4;
+						piyocont->mode = 4;
 						j = 999;
 					}
 					else if (IS_COMMAND1('s'))

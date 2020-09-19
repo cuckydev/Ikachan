@@ -2,6 +2,7 @@
 #include "Map.h"
 #include "NpChar.h"
 #include "Item.h"
+#include "PiyoPiyo.h"
 #include <windows.h>
 
 enum FADE_MODE
@@ -52,6 +53,6 @@ BOOL ReadEventScript(LPCTSTR path, EVENT_SCR *ptx);
 BOOL JumpEventScript(EVENT_SCR *ptx);
 short GetEventScriptNo(EVENT_SCR *ptx);
 void PutEventScriptCursor(EVENT_SCR *ptx);
-char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, FADE *fade, FRAME *frame);
+char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, PIYOPIYO_CONTROL *piyocont, FADE *fade, FRAME *frame);
 void PutMsgBox(EVENT_SCR *ptx);
 void InitEventScript(EVENT_SCR *ptx);

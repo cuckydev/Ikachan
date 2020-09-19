@@ -37,7 +37,7 @@ void PutMyChar(FRAME *frame)
 	};
 	
 	BYTE frame_no = (gMC.direct * 4) + gMC.ani_no;
-	PutBitmap3(&grcFull, (gMC.x / 0x400) - (frame->x / 0x400) - 8, (gMC.y / 0x400) - (frame->y / 0x400) - 8, &rcMyChar[frame_no], SURFACE_ID_MYCHAR2);
+	PutBitmap3(&grcFull, (gMC.x / 0x400) - (frame->x / 0x400), (gMC.y / 0x400) - (frame->y / 0x400), &rcMyChar[frame_no], SURFACE_ID_MYCHAR2);
 }
 
 void PutMyStatus()
@@ -71,7 +71,7 @@ void ActMyChar_Normal()
 	if ((gKeyTrg & KEY_Z) && gMC.swim_wait == 0)
 	{
 		//Swim sound and particle
-		PlaySoundObject(1, 1);
+		PlaySoundObject(SOUND_ID_DASH, SOUND_MODE_PLAY);
 
 		//Play animation and disable for 8 frames
 		gMC.swim_wait = 8;
@@ -89,7 +89,7 @@ void ActMyChar_Normal()
 	{
 		//Play charged sound
 		if (gMC.dash_wait == 31)
-			PlaySoundObject(6, 1);
+			PlaySoundObject(SOUND_ID_READY, SOUND_MODE_PLAY);
 
 		//Charge dash
 		if (++gMC.dash_wait > 32)
@@ -98,7 +98,7 @@ void ActMyChar_Normal()
 	else if (gMC.dash_wait == 32)
 	{
 		//Play dash sound
-		PlaySoundObject(7, 1);
+		PlaySoundObject(SOUND_ID_GO, SOUND_MODE_PLAY);
 
 		//Dash particle
 

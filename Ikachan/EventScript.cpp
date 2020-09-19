@@ -4,6 +4,7 @@
 #include "Sound.h"
 #include "Flags.h"
 #include "Player.h"
+#include "Game.h"
 #include <stdio.h>
 
 #define IS_COMMAND(c1, c2) (ptx->data[ptx->p_read] == '<' && ptx->data[ptx->p_read + 1] == (c1) && ptx->data[ptx->p_read + 2] == (c2))
@@ -253,19 +254,19 @@ short GetEventScriptNo(EVENT_SCR *ptx)
 void PutEventScriptCursor(EVENT_SCR *ptx)
 {
 	static RECT rcCursor[] = {
-		{ 64,  0, 72, 16 },
-		{ 72,  0, 80, 16 },
 		{ 56, 16, 64, 32 },
 		{ 48, 16, 56, 32 },
 		{ 48, 16, 56, 32 },
 		{ 56, 16, 64, 32 },
 		{ 64, 16, 72, 32 },
 		{ 72, 16, 80, 32 },
+		{ 64,  0, 72, 16 },
+		{ 72,  0, 80, 16 },
 	};
 	PutBitmap3(&grcFull, (SURFACE_WIDTH / 2) + 132, SURFACE_HEIGHT - 26, &rcCursor[(ptx->ani_cursor >> 2) % 8], SURFACE_ID_CURSOR);
 }
 
-char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, FADE *fade, FRAME *frame)
+char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, PIYOPIYO_CONTROL *piyocont, FADE *fade, FRAME *frame)
 {
 	TCHAR c[3] = { 0 };
 
@@ -362,18 +363,18 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, FADE *
 			if (gKeyTrg & KEY_LEFT)
 			{
 				ptx->select = 0;
-				PlaySoundObject(6, 1);
+				PlaySoundObject(SOUND_ID_READY, 1);
 			}
 			if (gKeyTrg & KEY_RIGHT)
 			{
 				ptx->select = 1;
-				PlaySoundObject(6, 1);
+				PlaySoundObject(SOUND_ID_READY, 1);
 			}
 			
 			//Select once Z is pressed
 			if (gKeyTrg & KEY_Z)
 			{
-				PlaySoundObject(1, 1);
+				PlaySoundObject(SOUND_ID_DASH, 1);
 				if (ptx->select)
 				{
 					//No
@@ -420,7 +421,7 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, FADE *
 			//Type character
 			c[0] = ptx->data[ptx->p_read];
 			c[1] = ptx->data[ptx->p_read + 1];
-			PlaySoundObject(8, 1);
+			PlaySoundObject(SOUND_ID_MESSAGE, SOUND_MODE_PLAY);
 			PutText2((8 * ptx->p_write) + 1, 1, c, 0xFF0000, SURFACE_ID_TEXT0 + (ptx->line % 2));
 			PutText2(8 * ptx->p_write, 0, c, 0xFFFFFF, SURFACE_ID_TEXT0 + (ptx->line % 2));
 			ptx->p_write += 2;
@@ -440,7 +441,7 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, FADE *
 			//Type character
 			c[0] = ptx->data[ptx->p_read];
 			c[1] = 0;
-			PlaySoundObject(8, 1);
+			PlaySoundObject(SOUND_ID_MESSAGE, SOUND_MODE_PLAY);
 			PutText2((8 * ptx->p_write) + 1, 1, c, 0xFF0000, SURFACE_ID_TEXT0 + (ptx->line % 2));
 			PutText2(8 * ptx->p_write, 0, c, 0xFFFFFF, SURFACE_ID_TEXT0 + (ptx->line % 2));
 			ptx->p_write++;
@@ -460,7 +461,7 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, FADE *
 			//Type character
 			c[0] = ptx->data[ptx->p_read];
 			c[1] = 0;
-			PlaySoundObject(8, 1);
+			PlaySoundObject(SOUND_ID_MESSAGE, SOUND_MODE_PLAY);
 			PutText2((8 * ptx->p_write) + 1, 1, c, 0xFF0000, SURFACE_ID_TEXT0 + (ptx->line % 2));
 			PutText2(8 * ptx->p_write, 0, c, 0xFFFFFF, SURFACE_ID_TEXT0 + (ptx->line % 2));
 			ptx->p_write++;
@@ -483,7 +484,7 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, FADE *
 				//Type character
 				c[0] = ptx->data[ptx->p_read];
 				c[1] = 0;
-				PlaySoundObject(8, 1);
+				PlaySoundObject(SOUND_ID_MESSAGE, SOUND_MODE_PLAY);
 				PutText2((8 * ptx->p_write) + 1, 1, c, 0xFF0000, SURFACE_ID_TEXT0 + (ptx->line % 2));
 				PutText2(8 * ptx->p_write, 0, c, 0xFFFFFF, SURFACE_ID_TEXT0 + (ptx->line % 2));
 				ptx->p_write++;
@@ -622,7 +623,7 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, FADE *
 			//Play requested sound
 			ptx->p_read += 3;
 			x = GetEventScriptNo(ptx);
-			PlaySoundObject(x, 1);
+			PlaySoundObject(x, SOUND_MODE_PLAY);
 			return 0;
 		}
 		if (IS_COMMAND('w','a'))
@@ -684,7 +685,7 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, FADE *
 			ptx->p_read += 3;
 			ptx->select = 0;
 			ptx->mode = 9;
-			PlaySoundObject(14, 1);
+			PlaySoundObject(SOUND_ID_YESNO, SOUND_MODE_PLAY);
 			return 0;
 		}
 		if (IS_COMMAND('m','c'))
@@ -694,19 +695,10 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, FADE *
 			ptx->msg_box = FALSE;
 			return 0;
 		}
-		if (IS_COMMAND('y','n'))
-		{
-			//Start Yes/No dialogue
-			ptx->p_read += 3;
-			ptx->select = 0;
-			ptx->mode = 9;
-			PlaySoundObject(14, 1);
-			return 0;
-		}
 		if (IS_COMMAND('d','s'))
 		{
 			//Save game
-			PlaySoundObject(13, 1);
+			PlaySoundObject(SOUND_ID_SAVE, SOUND_MODE_PLAY);
 			//SaveRecord(&items->code, &map->data, npc);
 			ptx->p_read += 3;
 			return 0;
@@ -714,7 +706,7 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, FADE *
 		if (IS_COMMAND('d','l'))
 		{
 			//Load game
-			PlaySoundObject(13, 1);
+			PlaySoundObject(SOUND_ID_SAVE, SOUND_MODE_PLAY);
 			if (FALSE)//LoadRecord(&items->code, &map->data, npc))
 			{
 				//Start from loaded game
@@ -748,7 +740,7 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, FADE *
 			//Restore Ikachan's health
 			gMC.life = gMycLife[gMC.level];
 			ptx->p_read += 3;
-			PlaySoundObject(12, 1);
+			PlaySoundObject(SOUND_ID_LIFEUP, SOUND_MODE_PLAY);
 			return 0;
 		}
 		if (IS_COMMAND('g','e'))
@@ -758,7 +750,7 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, FADE *
 			gMC.direct = 2;
 			fade->mode = 0;
 			ptx->p_read += 3;
-			PlaySoundObject(12, 1);
+			PlaySoundObject(SOUND_ID_LIFEUP, SOUND_MODE_PLAY);
 			return 0;
 		}
 		if (IS_COMMAND('r','e'))
@@ -822,39 +814,39 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, FADE *
 		if (IS_COMMAND('p','p'))
 		{
 			ptx->p_read += 3;
-			//*(_BYTE *)a5 = 2;
+			piyocont->mode = 2;
 			return 0;
 		}
 		if (IS_COMMAND('p','s'))
 		{
 			ptx->p_read += 3;
-			//*(_BYTE *)a5 = 3;
+			piyocont->mode = 3;
 			return 0;
 		}
 		if (IS_COMMAND('p','f'))
 		{
 			ptx->p_read += 3;
-			//*(_BYTE *)a5 = 4;
+			piyocont->mode = 4;
 			return 0;
 		}
 		if (IS_COMMAND('p','d'))
 		{
 			ptx->p_read += 3;
-			//*(_BYTE *)(a5 + 1) = GetEventScriptNo(a1);
-			//*(_BYTE *)a5 = 1;
-			//PutBitmap3(&grcFull, 144, 116, (int)&unk_41C630, SURFACE_ID_LOADING);
+			piyocont->track = GetEventScriptNo(ptx);
+			piyocont->mode = 1;
+			PutBitmap3(&grcFull, (SURFACE_WIDTH / 2) - 16, (SURFACE_HEIGHT / 2) - 4, &grcLoading, SURFACE_ID_LOADING);
 			return 0;
 		}
 		if (IS_COMMAND('p','h'))
 		{
 			ptx->p_read += 3;
-			//*(_BYTE *)a5 = 5;
+			piyocont->mode = 5;
 			return 0;
 		}
 		if (IS_COMMAND('p','n'))
 		{
 			ptx->p_read += 3;
-			//*(_BYTE *)a5 = 6;
+			piyocont->mode = 6;
 			return 0;
 		}
 		if (IS_COMMAND('t','e'))

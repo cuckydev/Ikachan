@@ -146,3 +146,79 @@ void ChangeSoundPan(int no, long pan) //512 is MAX and 256 is normal
 	if (lpSECONDARYBUFFER[no] != NULL)
 		lpSECONDARYBUFFER[no]->SetPan((pan - 256) * 10);
 }
+
+//PiyoPiyo sound
+WAVEFORMATEX format_tbl2 = {WAVE_FORMAT_PCM, 1, 22050, 22050, 1, 8, 0};
+int freq_tbl[12] = { 1551, 1652, 1747, 1848, 1955, 2074, 2205, 2324, 2461, 2616, 2770, 2938 };
+
+BOOL MakePiyoPiyoSoundObject(CHAR *wave, BYTE *envelope, int octave, int data_size, int no)
+{
+	BOOL result;
+	int i;
+
+	//Construct sound buffers
+	DSBUFFERDESC dsbd;
+	memset(&dsbd, 0, sizeof(DSBUFFERDESC));
+	dsbd.dwSize = sizeof(dsbd);
+	dsbd.dwBufferBytes = data_size;
+	dsbd.lpwfxFormat = &format_tbl2;
+	dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_GLOBALFOCUS | DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY;
+	
+	for (i = 0; i < 24; i++)
+	{
+		if (lpDS->CreateSoundBuffer(&dsbd, &lpSECONDARYBUFFER[no + i], NULL) != DS_OK)
+			return FALSE;
+	}
+	
+	//Write sound data
+	BYTE *wp = (BYTE*)malloc(data_size);
+	
+	for (i = 0; i < 24; i++)
+	{
+		//Construct waveform
+		int wp_sub = 0;
+		int envelope_i = 0;
+		
+		for (int j = 0; j < data_size; j++)
+		{
+			//Get sample
+			int sample = wave[(BYTE)(wp_sub / 256)];
+			envelope_i = (j << 6) / data_size;
+			sample = sample * envelope[envelope_i] / 128;
+			
+			//Set sample
+			wp[j] = sample + 0x80;
+			
+			//Increase sub-pos
+			int freq;
+			if (i >= 12)
+				freq = octave * freq_tbl[i - 12] / 8;
+			else
+				freq = octave * freq_tbl[i] / 16;
+			wp_sub += freq;
+		}
+		
+		//Lock sound buffer
+		LPVOID lpbuf1, lpbuf2;
+		DWORD dwbuf1, dwbuf2 = 0;
+		
+		HRESULT hr = lpSECONDARYBUFFER[no + i]->Lock(0, data_size, &lpbuf1, &dwbuf1, &lpbuf2, &dwbuf2, 0);
+		if (hr != DS_OK)
+		{
+			result = FALSE;
+			break;
+		}
+		
+		//Copy waveform
+		memcpy(lpbuf1, wp, data_size);
+		
+		//Unlock sound buffer
+		lpSECONDARYBUFFER[no + i]->Unlock(lpbuf1, dwbuf1, lpbuf2, dwbuf2);
+	}
+	
+	//Check if there was an error and free wave buffer
+	if (i == 24)
+		result = TRUE;
+	free(wp);
+	return result;
+}
