@@ -21,14 +21,15 @@ void InitItem(ITEMS *items)
 
 void PutItem(ITEMS *items)
 {
+	RECT rcFrame = { 0, 0, 176, 32 };
+	RECT rcItem = { 0, 0, 0, 16 };
+	RECT rcCursor = {32, 0, 48, 16};
+	
 	//Draw background and frame
 	PutBitmap3(&grcFull, 0, 0, &grcFull, SURFACE_ID_BACKUP);
-
-	RECT rcFrame = { 0, 0, 176, 32 };
 	PutBitmap3(&grcFull, (SURFACE_WIDTH - 176) / 2, (SURFACE_HEIGHT / 2) + 8, &rcFrame, SURFACE_ID_ITEMBOX);
 
 	//Draw items
-	RECT rcItem = { 0, 0, 0, 16 };
 	for (int i = 0; i < MAX_ITEMS; i++)
 	{
 		rcItem.left = (items->code[i] - 1) * 16;
@@ -37,7 +38,6 @@ void PutItem(ITEMS *items)
 	}
 
 	//Draw cursor
-	RECT rcCursor = {32, 0, 48, 16};
 	PutBitmap3(&grcFull, (SURFACE_WIDTH - (16 * MAX_ITEMS)) / 2 + (items->selected_item * 16), (SURFACE_HEIGHT / 2) + 16, &rcCursor, SURFACE_ID_CURSOR);
 }
 

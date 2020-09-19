@@ -26,12 +26,12 @@ struct PIYOPIYO_HEADER
 	BOOLEAN writable; //x3
 	DWORD p_track1; //x4
 	DWORD wait; //x8
-	int loop_start; //xC
-	int loop_end; //x10
+	int repeat_x; //xC
+	int end_x; //x10
 	int records; //x14
 	
 	//Track headers
-	PIYOPIYO_TRACKHEADER track_header[3]; //x18 x16C x2C0
+	PIYOPIYO_TRACKHEADER track[3]; //x18 x16C x2C0
 	DWORD percussion_volume; //x414
 };
 
@@ -111,7 +111,6 @@ BOOL InitPiyoPiyo()
 			gPiyoPiyo.record[3] = NULL;
 		}
 	}
-	assert(sizeof(PIYOPIYO_HEADER) == 0x418);
 	return TRUE;
 }
 
@@ -164,16 +163,16 @@ BOOL ReadPiyoPiyo(LPCTSTR path)
 
 void PiyoPiyoProc()
 {
-	int pan_tbl[8] = {
-		0, 96, 180, 224, 256, 288, 332, 420
+	int pan_tbl[9] = {
+		0, 96, 180, 224, 256, 288, 332, 420, 512
 	};
 	
 	//Check if next step should be played
 	if (gPiyoPiyo.init && gPiyoPiyo.playing && GetTickCount() > (gPiyoPiyo.tick + gPiyoPiyo.header.wait))
 	{
 		//Check if position passes loop point
-		if (++gPiyoPiyo.position > (gPiyoPiyo.header.loop_end - 1) || gPiyoPiyo.position > (gPiyoPiyo.header.records - 1))
-			gPiyoPiyo.position = gPiyoPiyo.header.loop_start;
+		if (++gPiyoPiyo.position > (gPiyoPiyo.header.end_x - 1) || gPiyoPiyo.position > (gPiyoPiyo.header.records - 1))
+			gPiyoPiyo.position = gPiyoPiyo.header.repeat_x;
 		
 		//Step channels
 		for (int i = 0; i < 4; i++)
@@ -212,7 +211,7 @@ void MakePiyoPiyoSoundObjects()
 		for (int i = 0; i < 3; i++)
 		{
 			//Get octave
-			int octave = 1 << gPiyoPiyo.header.track_header[i].octave;
+			int octave = 1 << gPiyoPiyo.header.track[i].octave;
 			
 			//Release previous objects
 			for (int j = 0; j < 24; j++)
@@ -220,15 +219,15 @@ void MakePiyoPiyoSoundObjects()
 			
 			//Make new objects
 			MakePiyoPiyoSoundObject(
-				gPiyoPiyo.header.track_header[i].wave,
-				gPiyoPiyo.header.track_header[i].envelope,
+				gPiyoPiyo.header.track[i].wave,
+				gPiyoPiyo.header.track[i].envelope,
 				octave, 
-				gPiyoPiyo.header.track_header[i].length,
+				gPiyoPiyo.header.track[i].length,
 				400 + (24 * i));
 			
 			//Set track volume
 			for (int j = 0; j < 24; j++)
-				ChangeSoundVolume(400 + (i * 24) + j, gPiyoPiyo.header.track_header[i].volume);
+				ChangeSoundVolume(400 + (i * 24) + j, gPiyoPiyo.header.track[i].volume);
 		}
 		
 		//Set drum volume
@@ -248,7 +247,7 @@ void ChangePiyoPiyoVolume(PIYOPIYO_CONTROL *piyocont)
 		for (int i = 0; i < 3; i++)
 		{
 			for (int j = 0; j < 24; j++)
-				ChangeSoundVolume(400 + (i * 24) + j, gPiyoPiyo.header.track_header[i].volume - piyocont->volume);
+				ChangeSoundVolume(400 + (i * 24) + j, gPiyoPiyo.header.track[i].volume - piyocont->volume);
 		}
 		
 		//Set drum volume
