@@ -10,7 +10,6 @@
 #include "Player.h"
 #include "NpChar.h"
 #include "PiyoPiyo.h"
-#include "PlaHitMap.h"
 #include <stdio.h>
 
 DWORD gKeyTrg, gMouseTrg, gMouseTrg2;

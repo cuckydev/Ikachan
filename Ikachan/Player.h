@@ -31,10 +31,12 @@ struct MYCHAR
 
 extern MYCHAR gMC;
 
-#define MAX_LEVEL (7)
-extern short gMycLife[MAX_LEVEL];
-extern short gMycExp[MAX_LEVEL];
+#define MAX_LEVEL (6)
+extern short gMycLife[MAX_LEVEL + 1];
+extern short gMycExp[MAX_LEVEL + 1];
 
+void DamageMyChar(char damage);
+void HitMyCharMap(MAP *map);
 void PutMyChar(FRAME *frame);
 void PutMyStatus();
 void ActMyChar();

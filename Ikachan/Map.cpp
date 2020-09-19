@@ -210,14 +210,14 @@ void MoveFrame(FRAME *frame, NPCHAR *npc, MAP *map)
 	}
 	
 	//Move frame towards target
-	if ((frame->x + (SURFACE_WIDTH << 9)) < tx)
-		frame->x += (tx - (frame->x + (SURFACE_WIDTH << 9))) / 16;
-	if ((frame->x + (SURFACE_WIDTH << 9)) > tx)
-		frame->x += (tx - (frame->x + (SURFACE_WIDTH << 9))) / 16;
-	if ((frame->y + (SURFACE_HEIGHT << 9)) < ty)
-		frame->y += (ty - (frame->y + (SURFACE_HEIGHT << 9))) / 16;
-	if ((frame->y + (SURFACE_HEIGHT << 9)) > ty)
-		frame->y += (ty - (frame->y + (SURFACE_HEIGHT << 9))) / 16;
+	if ((frame->x + (SURFACE_WIDTH << 9) - 0x2000) < tx)
+		frame->x += (tx - (frame->x + (SURFACE_WIDTH << 9) - 0x2000)) / 16;
+	if ((frame->x + (SURFACE_WIDTH << 9) - 0x2000) > tx)
+		frame->x += (tx - (frame->x + (SURFACE_WIDTH << 9) - 0x2000)) / 16;
+	if ((frame->y + (SURFACE_HEIGHT << 9) - 0x2000) < ty)
+		frame->y += (ty - (frame->y + (SURFACE_HEIGHT << 9) - 0x2000)) / 16;
+	if ((frame->y + (SURFACE_HEIGHT << 9) - 0x2000) > ty)
+		frame->y += (ty - (frame->y + (SURFACE_HEIGHT << 9) - 0x2000)) / 16;
 
 	//Keep frame in map bounds
 	if (frame->x < 0)

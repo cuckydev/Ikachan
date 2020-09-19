@@ -153,9 +153,6 @@
 				RelativePath="..\Ikachan\PiyoPiyo.cpp">
 			</File>
 			<File
-				RelativePath="..\Ikachan\PlaHitMap.cpp">
-			</File>
-			<File
 				RelativePath="..\Ikachan\Player.cpp">
 			</File>
 			<File
@@ -204,9 +201,6 @@
 			</File>
 			<File
 				RelativePath="..\Ikachan\PiyoPiyo.h">
-			</File>
-			<File
-				RelativePath="..\Ikachan\PlaHitMap.h">
 			</File>
 			<File
 				RelativePath="..\Ikachan\Player.h">
