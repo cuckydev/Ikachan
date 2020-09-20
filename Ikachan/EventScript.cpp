@@ -5,6 +5,7 @@
 #include "Flags.h"
 #include "Player.h"
 #include "Game.h"
+#include "Editor.h"
 #include <stdio.h>
 
 #define IS_COMMAND(c1, c2) (ptx->data[ptx->p_read] == '<' && ptx->data[ptx->p_read + 1] == (c1) && ptx->data[ptx->p_read + 2] == (c2))
@@ -723,15 +724,15 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, PIYOPI
 		}
 		if (IS_COMMAND('n','l'))
 		{
-			//sub_4046B0((int)a3);
+			LoadNpChar(npc);
 			gMC.no_event = 100;
 			ptx->p_read += 3;
 			return 0;
 		}
 		if (IS_COMMAND('c','e'))
 		{
-			//LoadEvent((int)a3);
-			//sub_401000();
+			ReloadNpChar(npc);
+			//InitBoss();
 			ptx->p_read += 3;
 			return 0;
 		}

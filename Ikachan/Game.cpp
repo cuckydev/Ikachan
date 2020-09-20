@@ -10,6 +10,7 @@
 #include "Player.h"
 #include "NpChar.h"
 #include "PiyoPiyo.h"
+#include "Editor.h"
 #include <stdio.h>
 
 DWORD gKeyTrg, gMouseTrg, gMouseTrg2;
@@ -102,6 +103,7 @@ BOOL Game(HWND hWnd)
 	InitEventScript(&event_scr);
 	InitMyChar();
 	InitNpChar(npc);
+	LoadNpChar(npc);
 	InitTextObject(NULL);
 	
 	//Initialize fade
@@ -266,6 +268,12 @@ BOOL Game(HWND hWnd)
 			//Draw background
 			PutBack(&frame);
 			PutMapBack(&map, frame.x, frame.y);
+			
+			//Update and draw NPCs
+			HitNpCharMap(npc, &map);
+			if (!event_scr.msg_box)
+				ActNpChar(npc);
+			PutNpChar(npc, &frame);
 			
 			//Update and draw Ikachan
 			if (gMC.cond)

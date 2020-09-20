@@ -133,7 +133,7 @@ BYTE JudgeHitMyCharBlock(int x, int y, char flag)
 	return gMC.flag;
 }
 
-BYTE JudgeHitMyCharSnack(int x, int y, char flag, MAP *map)
+BYTE JudgeHitMyCharSnack(int x, int y, BYTE flag, MAP *map)
 {
 	//Reset collision flag for some reason
 	gMC.flag = 0;
@@ -242,7 +242,7 @@ void JudgeHitMyCharDamage(int x, int y)
 	}
 }
 
-void JudgeHitMyCharVector(int x, int y, char type)
+void JudgeHitMyCharVector(int x, int y, BYTE type)
 {
 	if ((gMC.x / 0x400) < (x * 16 + 8) &&
 		(gMC.x / 0x400) >= (x * 16 - 8) &&
@@ -288,11 +288,11 @@ void JudgeHitMyCharItem(int x, int y, MAP *map)
 
 void HitMyCharMap(MAP *map)
 {
-	//Collision offsets
+	//Collision offsets and flags
 	char offx[4];
 	char offy[4];
-	char v7[4];
-	char v13[4];
+	BOOLEAN flag1[4];
+	BYTE flag2[4];
 	
 	offx[0] = 0;
 	offx[1] = 1;
@@ -303,35 +303,35 @@ void HitMyCharMap(MAP *map)
 	offy[1] = 0;
 	offy[2] = 1;
 	offy[3] = 1;
-
-	v7[0] = 0;
-	v7[1] = 0;
-	v7[2] = 1;
-	v7[3] = 1;
-
-	v13[0] = 1 | 2;
-	v13[1] = 4 | 2;
-	v13[2] = 8 | 1;
-	v13[3] = 8 | 4;
+	
+	flag1[0] = 0;
+	flag1[1] = 0;
+	flag1[2] = 1;
+	flag1[3] = 1;
+	
+	flag2[0] = 1 | 2;
+	flag2[1] = 4 | 2;
+	flag2[2] = 8 | 1;
+	flag2[3] = 8 | 4;
 	
 	//Collision position
 	int x = gMC.x / 0x400 / 16;
 	int y = gMC.y / 0x400 / 16;
-
+	
 	//Reset collision state
-	char v19 = 4;
+	signed char v19 = 4;
 	gMC.flag = 0;
 	
 	for (int i = 0; i < 4; i++)
 	{
 		//Get tile at the position to check
 		int part = map->data[(x + offx[i]) + map->width * (y + offy[i])];
-
+		
 		//Block collision
 		if (part < 0x80 || part >= 0xA0)
-			v19 -= v7[i];
-		else if (!(JudgeHitMyCharBlock(x + offx[i], y + offy[i], v13[i]) & 8))
-			v19 -= v7[i];
+			v19 -= flag1[i];
+		else if ((JudgeHitMyCharBlock(x + offx[i], y + offy[i], flag2[i]) & 8) == 0)
+			v19 -= flag1[i];
 		//Vector collision
 		if (part >= 0x60 && part < 0x80)
 			JudgeHitMyCharVector(x + offx[i], y + offy[i], part);
@@ -343,9 +343,9 @@ void HitMyCharMap(MAP *map)
 			JudgeHitMyCharItem(x + offx[i], y + offy[i], map);
 		//Snack collision
 		else if (part < 0xE0 || part >= 0x100)
-			v19 -= v7[i];
-		else if (!(JudgeHitMyCharSnack(x + offx[i], y + offy[i], v13[i], map) & 8))
-			v19 -= v7[i];
+			v19 -= flag1[i];
+		else if ((JudgeHitMyCharSnack(x + offx[i], y + offy[i], flag2[i], map) & 8) == 0)
+			v19 -= flag1[i];
 	}
 	
 	//Check if we should level up
@@ -557,7 +557,15 @@ void ActMyChar_Dash()
 
 void ActMyChar_Ship()
 {
+	//Create effect
 	
+	//Fly up
+	gMC.xm = 0;
+	gMC.ym -= 16;
+	gMC.y += gMC.ym;
+	gMC.ani_no = 3;
+	if (gMC.shock != 0)
+		gMC.shock = 0;
 }
 
 void ActMyChar()
