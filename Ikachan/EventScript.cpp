@@ -61,7 +61,7 @@ RECT rcLine = { 0, 0, 272, 16 };
 RECT rcYNYes = { 0, 0, 48, 16 };
 RECT rcYNNo = { 0, 16, 48, 32 };
 RECT rcYNSel = { 48, 0, 112, 32 };
-RECT rcLineClip = { 24, 190, 296, 226};
+RECT rcLineClip = { (SURFACE_WIDTH / 2) - 136, SURFACE_HEIGHT - 50, (SURFACE_WIDTH / 2) + 136, SURFACE_HEIGHT - 14 };
 
 //Fade dimensions
 #define FADE_WIDTH ((SURFACE_WIDTH + 15) / 16)

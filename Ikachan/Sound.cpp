@@ -1,9 +1,6 @@
 #include "Sound.h"
 #include "System.h"
-
-#define DIRECTSOUND_VERSION 0x500
 #include <dsound.h>
-
 #include <stdio.h>
 
 //DirectSound objects
@@ -26,7 +23,7 @@ BOOL InitDirectSound(HWND hwnd)
 	DSBUFFERDESC dsbd;
 	ZeroMemory(&dsbd, sizeof(dsbd));
 	dsbd.dwSize = sizeof(dsbd);
-	dsbd.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME;
+	dsbd.dwFlags = DSBCAPS_PRIMARYBUFFER;
 	lpDS->CreateSoundBuffer(&dsbd, &lpPRIMARYBUFFER, NULL);
 
 	//Clear secondary sound buffers
@@ -84,7 +81,7 @@ BOOL InitSoundObject(LPCSTR resname, int no)
 	DSBUFFERDESC dsbd;
 	memset(&dsbd, 0, sizeof(DSBUFFERDESC));
 	dsbd.dwSize = sizeof(DSBUFFERDESC);
-	dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_STICKYFOCUS | DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY;
+	dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLFREQUENCY | DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME | DSBCAPS_GLOBALFOCUS;
 	dsbd.dwBufferBytes = *(DWORD*)((BYTE*)lpdword + 0x36);
 	dsbd.lpwfxFormat = (LPWAVEFORMATEX)(lpdword + 5);
 	if (lpDS->CreateSoundBuffer(&dsbd, &lpSECONDARYBUFFER[no], NULL) != DS_OK)
@@ -97,9 +94,9 @@ BOOL InitSoundObject(LPCSTR resname, int no)
 		&lpbuf1, &dwbuf1, &lpbuf2, &dwbuf2, 0);
 
 	//Copy data
-	memcpy(lpbuf1, (BYTE*)lpdword + 0x3a, dwbuf1);
+	memcpy(lpbuf1, (BYTE*)lpdword + 0x3A, dwbuf1);
 	if (dwbuf2 != 0)
-		memcpy(lpbuf2, (BYTE*)lpdword + 0x3a + dwbuf1, dwbuf2);
+		memcpy(lpbuf2, (BYTE*)lpdword + 0x3A + dwbuf1, dwbuf2);
 	
 	//Unlock sound buffer
 	lpSECONDARYBUFFER[no]->Unlock(lpbuf1, dwbuf1, lpbuf2, dwbuf2);
@@ -161,8 +158,8 @@ BOOL MakePiyoPiyoSoundObject(CHAR *wave, BYTE *envelope, int octave, int data_si
 	memset(&dsbd, 0, sizeof(DSBUFFERDESC));
 	dsbd.dwSize = sizeof(dsbd);
 	dsbd.dwBufferBytes = data_size;
+	dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | DSBCAPS_STICKYFOCUS;
 	dsbd.lpwfxFormat = &format_tbl2;
-	dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_GLOBALFOCUS | DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY;
 	
 	for (i = 0; i < 24; i++)
 	{
@@ -191,10 +188,10 @@ BOOL MakePiyoPiyoSoundObject(CHAR *wave, BYTE *envelope, int octave, int data_si
 			
 			//Increase sub-pos
 			int freq;
-			if (i >= 12)
-				freq = octave * freq_tbl[i - 12] / 8;
-			else
+			if (i < 12)
 				freq = octave * freq_tbl[i] / 16;
+			else
+				freq = octave * freq_tbl[i - 12] / 8;
 			wp_sub += freq;
 		}
 		
@@ -210,7 +207,10 @@ BOOL MakePiyoPiyoSoundObject(CHAR *wave, BYTE *envelope, int octave, int data_si
 		}
 		
 		//Copy waveform
-		memcpy(lpbuf1, wp, data_size);
+		memset(lpbuf1, 0, data_size);
+		memcpy(lpbuf1, wp, dwbuf1);
+		if (dwbuf2 != 0)
+			memcpy(lpbuf2, wp + dwbuf1, dwbuf2);
 		
 		//Unlock sound buffer
 		lpSECONDARYBUFFER[no + i]->Unlock(lpbuf1, dwbuf1, lpbuf2, dwbuf2);

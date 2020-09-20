@@ -413,7 +413,7 @@ void PutMyChar(FRAME *frame)
 
 void PutMyStatus()
 {
-	static RECT rcStatus = { 0, 0, 88, 32 };
+	RECT rcStatus = { 0, 0, 88, 32 };
 	PutBitmap3(&grcFull, 8, 8, &rcStatus, SURFACE_ID_STATUS);
 	PutNumber(16, 8, gMC.level);
 	PutNumber(16, 16, gMC.exp);

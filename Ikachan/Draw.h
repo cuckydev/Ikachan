@@ -69,7 +69,7 @@ extern RECT grcFull;
 
 void SetClientOffset(int width, int height);
 BOOL Flip_SystemTask(HWND hWnd);
-BOOL StartDirectDraw(HWND hWnd, WND_SIZE wndSize);
+BOOL StartDirectDraw(HWND hWnd, int wndSize);
 void EndDirectDraw(HWND hWnd);
 BOOL MakeSurface_File(LPCTSTR name, int surf_no);
 BOOL MakeSurface_Generic(int bxsize, int bysize, int surf_no);

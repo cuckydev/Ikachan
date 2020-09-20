@@ -163,8 +163,8 @@ BOOL ReadPiyoPiyo(LPCTSTR path)
 
 void PiyoPiyoProc()
 {
-	int pan_tbl[9] = {
-		0, 96, 180, 224, 256, 288, 332, 420, 512
+	int pan_tbl[8] = {
+		0, 96, 180, 224, 256, 288, 332, 420
 	};
 	
 	//Check if next step should be played
@@ -179,7 +179,7 @@ void PiyoPiyoProc()
 		{
 			//Get this record
 			DWORD record = gPiyoPiyo.record[i][gPiyoPiyo.position];
-
+			
 			//Change pan
 			if (record & 0xFF000000)
 			{
@@ -187,7 +187,7 @@ void PiyoPiyoProc()
 				for (int j = 0; j < 24; j++)
 					ChangeSoundPan(400 + (i * 24) + j, pan_tbl[pan]);
 			}
-
+			
 			//Play notes
 			for (int j = 0; j < 24; j++)
 			{
@@ -196,7 +196,7 @@ void PiyoPiyoProc()
 				record >>= 1;
 			}
 		}
-
+		
 		//Remember previous tick
 		gPiyoPiyo.tick = GetTickCount();
 	}

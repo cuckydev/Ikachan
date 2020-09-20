@@ -67,11 +67,11 @@ BOOL Flip_SystemTask(HWND hWnd)
 }
 
 //DirectDraw interface
-BOOL StartDirectDraw(HWND hWnd, WND_SIZE wndSize)
+BOOL StartDirectDraw(HWND hWnd, int wndSize)
 {
 	//Create DirectDraw instance
 	if (DirectDrawCreate(NULL, &lpDD, NULL) != DD_OK)
-		return TRUE;
+		return FALSE;
 
 	//Set cooperative level
 	switch (wndSize)
