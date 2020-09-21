@@ -4,6 +4,7 @@
 #include "EventScript.h"
 #include "Map.h"
 #include "Player.h"
+#include "Sound.h"
 #include <stdio.h>
 
 //NPC initialization
@@ -695,6 +696,129 @@ void HitNpCharMap(NPCHAR *npc, MAP *map)
 			//Set airborne flag
 			if (v4 <= 0)
 				npc->airborne = TRUE;
+		}
+	}
+}
+
+void HitMyCharNpChar(NPCHAR *npc, EVENT_SCR *event_scr)
+{
+	for (int i = 0; i < MAX_NPCS; i++, npc++)
+	{
+		BOOL touch = FALSE;
+		if (npc->cond == FALSE)
+			continue;
+		
+		//Check for non-solid contact
+		if (npc->type != 3 && (npc->type != 2 || gMC.shock != 0))
+		{
+			if (npc->type == 0 &&
+				gMC.no_event == 0 &&
+				gMC.x < npc->x + 0x1000 &&
+				gMC.x > npc->x - 0x1000 &&
+				gMC.y < npc->y + 0x1000 &&
+				gMC.y > npc->y - 0x1000)
+			{
+				//Start NPC's event
+				event_scr->mode = 1;
+				event_scr->x1C = 4;
+				event_scr->event_no = npc->x4;
+				gMC.no_event = 100;
+				continue;
+			}
+		}
+		else
+		{
+			//Solid contact
+			if (gMC.x < (npc->x + 0x3400) && gMC.x > (npc->x + 0x2000) && gMC.y < (npc->y + 0x3000) && gMC.y > (npc->y - 0x3000))
+			{
+				gMC.x = npc->x + 0x3400;
+				gMC.xm = 0;
+				gMC.flag |= 1;
+				touch = TRUE;
+			}
+			if (gMC.y < (npc->y + 0x3400) && gMC.y > (npc->y + 0x2000) && gMC.x < (npc->x + 0x3000) && gMC.x > (npc->x - 0x3000))
+			{
+				if (gMC.ym < -100)
+					PlaySoundObject(SOUND_ID_HITHEAD, SOUND_MODE_PLAY);
+				gMC.y = npc->y + 0x3400;
+				gMC.ym = 0;
+				gMC.flag |= 2;
+				touch = TRUE;
+			}
+			if (gMC.x > (npc->x - 0x3400) && (gMC.x + 0x3FF) < (npc->x - 0x2000) && gMC.y < (npc->y + 0x3000) && gMC.y > (npc->y - 0x3000))
+			{
+				gMC.x = npc->x - 0x3400;
+				gMC.xm = 0;
+				gMC.flag |= 4;
+				touch = TRUE;
+			}
+			if (gMC.y >= (npc->y - 0x3400) && gMC.y < (npc->y - 0x2000) && gMC.x > (npc->x - 0x3000) && gMC.x < (npc->x + 0x3000))
+			{
+				gMC.airborne = FALSE;
+				gMC.y = npc->y - 0x3400;
+				if (gMC.ym > 0)
+					gMC.ym = 0;
+				gMC.flag |= 8;
+				touch = TRUE;
+			}
+		}
+		
+		if (touch && gMC.no_event == 0)
+		{
+			static BYTE npc_damage[] = { 1, 0, 2, 4, 4, 2, 0, 0 };
+			static BYTE npc_defense[] = { 1, 4, 2, 9, 3, 2, 0, 0 };
+			static BYTE npc_exp[] = {1, 0, 3, 0, 0, 3, 0, 0 };
+			
+			switch (npc->type)
+			{
+				case 2:
+					//Hurt Ikachan
+					if (npc->act_no == 1)
+					{
+						if (gMC.x < npc->x)
+							gMC.xm = -0x400;
+						if (gMC.x > npc->x)
+							gMC.xm = 0x400;
+						DamageMyChar(npc_damage[npc->code_char]);
+					}
+					
+					//Check if we should hurt the NPC
+					if (gMC.flag != 0 && gMC.unit == 1 && gMC.flag != 8 || (gMC.flag & 2) && (gMC.equip & 1))
+					{
+						if (npc_defense[npc->code_char] > gMC.level)
+						{
+							//The NPC was too strong
+							if ( !gMC.no_event )
+								PlaySoundObject(SOUND_ID_NODMG, SOUND_MODE_PLAY);
+							gMC.no_event = 100;
+						}
+						else
+						{
+							//Award us experience
+							PlaySoundObject(10, 1);
+							gMC.exp += npc_exp[npc->code_char];
+							//Show how much exp we gained
+							
+							//Destroy the NPC
+							npc->cond = 0;
+							//NPC kill effect
+							
+							//Start NPC's event
+							event_scr->mode = 1;
+							event_scr->x1C = 4;
+							event_scr->event_no = npc->x4;
+							gMC.no_event = 100;
+						}
+					}
+					break;
+				case 3:
+					//Start NPC's event
+					event_scr->mode = 1;
+					event_scr->x1C = 4;
+					event_scr->event_no = npc->x4;
+					gMC.no_event = 100;
+					break;
+			}
 		}
 	}
 }

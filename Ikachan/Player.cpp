@@ -182,7 +182,6 @@ BYTE JudgeHitMyCharSnack(int x, int y, BYTE flag, MAP *map)
 			if (gMC.unit != 1)
 				gMC.xm = 0;
 			gMC.x = (x * 16 + 15) << 10;
-			gMC.ym = 0;
 			gMC.flag |= 1u;
 		}
 		if ((gMC.y / 0x400) >= (y * 16 - 16) && (gMC.x / 0x400) < (x * 16 + 12))

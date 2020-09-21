@@ -164,10 +164,6 @@ BOOL Game(HWND hWnd)
 	event_scr.x1C = 4;
 	event_scr.event_no = 1;
 	
-	//Reset frame state
-	frame.mode = FRAME_MODE_MYCHAR;
-	frame.npc = 0;
-	
 	//Load screen
 	next_mode = GAMEMODE_INTRO;
 	while (mode == GAMEMODE_LOAD)
@@ -181,8 +177,9 @@ BOOL Game(HWND hWnd)
 		//Run load script
 		if (EventScriptProc(&event_scr, &items, npc, &map, &piyocont, &fade, &frame) == 2)
 		{
-			event_scr.wait = 0;
-			event_scr.mode = 3;
+			fade.wait = 0;
+			fade.mode = 3;
+			next_mode = GAMEMODE_GAMEPLAY;
 		}
 		if (event_scr.mode == 0)
 			mode = next_mode;
@@ -248,6 +245,12 @@ BOOL Game(HWND hWnd)
 	piyocont.mode = 1;
 	PiyoPiyoControl(&piyocont);
 	
+	//Initialize frame
+	frame.x = gMC.x - (SURFACE_WIDTH << 9);
+	frame.y = gMC.y - (SURFACE_HEIGHT << 9);
+	frame.mode = FRAME_MODE_MYCHAR;
+	frame.npc = 0;
+	
 	//Enter game loop
 	while (mode != GAMEMODE_STAFF)
 	{
@@ -285,7 +288,7 @@ BOOL Game(HWND hWnd)
 				//Player collision
 				if (gMC.unit != 2)
 				{
-					//sub_40B9F0((int)&v3, (int)&v12, v11);
+					HitMyCharNpChar(npc, &event_scr);
 					HitMyCharMap(&map);
 				}
 				

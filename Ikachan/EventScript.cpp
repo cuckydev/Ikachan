@@ -205,13 +205,101 @@ BOOL ReadEventScript(LPCTSTR path, EVENT_SCR *ptx)
 //Saving
 LPCSTR save_magic = "ika_en03";
 
-BOOL SaveRecord()
+BOOL SaveRecord(ITEMS *items, MAP *map, NPCHAR *npc)
 {
+	//Open file
+	TCHAR path[MAX_PATH];
+	sprintf(path, "%s\\%s", gModulePath, "Ika.rec");
+	
+	FILE *fp = fopen(path, "wb");
+	if (fp == NULL)
+		return FALSE;
+	
+	//Write magic
+	fwrite(save_magic, 1, 8, fp);
+	
+	//Write Ikachan's state
+	fwrite(&gMC.x, 4, 1, fp);
+	fwrite(&gMC.y, 4, 1, fp);
+	fwrite(&gMC.life, 2, 1, fp);
+	fwrite(&gMC.exp, 2, 1, fp);
+	fwrite(&gMC.level, 1, 1, fp);
+	fwrite(&gMC.equip, 1, 1, fp);
+	
+	//Write flags
+	fwrite(gFlagNPC, 1, FLAG_BYTES, fp);
+	
+	//Write items
+	fwrite(items->code, 1, MAX_ITEMS, fp);
+	
+	//Write map data
+	fwrite(&map->width, 4, 1, fp);
+	fwrite(&map->length, 4, 1, fp);
+	fwrite(map->data, 1, map->length * map->width, fp);
+	
+	//Write NPCs
+	for (int i = 0; i < MAX_NPCS; i++)
+	{
+		fwrite(&npc[i].x, 4, 1, fp);
+		fwrite(&npc[i].y, 4, 1, fp);
+		fwrite(&npc[i].tgt_x, 4, 1, fp);
+		fwrite(&npc[i].tgt_y, 4, 1, fp);
+		fwrite(&npc[i].xm, 4, 1, fp);
+		fwrite(&npc[i].ym, 4, 1, fp);
+	}
+	
+	fclose(fp);
 	return TRUE;
 }
 
-BOOL LoadRecord()
+BOOL LoadRecord(ITEMS *items, MAP *map, NPCHAR *npc)
 {
+	//Open file
+	TCHAR path[MAX_PATH];
+	sprintf(path, "%s\\%s", gModulePath, "Ika.rec");
+	
+	FILE *fp = fopen(path, "rb");
+	if (fp == NULL)
+		return FALSE;
+	
+	//Verify magic
+	char magic[8];
+	fread(magic, 1, 8, fp);
+	for (int i = 0; i < 8; i++)
+		if (magic[i] != save_magic[i])
+			return FALSE; //strncmp will be real in
+	
+	//Read Ikachan's state
+	fread(&gMC.x, 4, 1, fp);
+	fread(&gMC.y, 4, 1, fp);
+	fread(&gMC.life, 2, 1, fp);
+	fread(&gMC.exp, 2, 1, fp);
+	fread(&gMC.level, 1, 1, fp);
+	fread(&gMC.equip, 1, 1, fp);
+	
+	//Read flags
+	fread(gFlagNPC, 1, FLAG_BYTES, fp);
+	
+	//Read items
+	fread(items->code, 1, MAX_ITEMS, fp);
+	
+	//Read map data
+	fread(&map->width, 4, 1, fp);
+	fread(&map->length, 4, 1, fp);
+	fread(map->data, 1, map->length * map->width, fp);
+	
+	//Read NPCs
+	for (int i = 0; i < MAX_NPCS; i++)
+	{
+		fread(&npc[i].x, 4, 1, fp);
+		fread(&npc[i].y, 4, 1, fp);
+		fread(&npc[i].tgt_x, 4, 1, fp);
+		fread(&npc[i].tgt_y, 4, 1, fp);
+		fread(&npc[i].xm, 4, 1, fp);
+		fread(&npc[i].ym, 4, 1, fp);
+	}
+	
+	fclose(fp);
 	return TRUE;
 }
 
@@ -557,6 +645,7 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, PIYOPI
 		if (IS_COMMAND('i','+'))
 		{
 			//Give item
+			PlaySoundObject(SOUND_ID_ITEM, SOUND_MODE_PLAY);
 			ptx->p_read += 3;
 			x = GetEventScriptNo(ptx);
 			AddItemData(items, (char)x);
@@ -700,7 +789,7 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, PIYOPI
 		{
 			//Save game
 			PlaySoundObject(SOUND_ID_SAVE, SOUND_MODE_PLAY);
-			//SaveRecord(&items->code, &map->data, npc);
+			SaveRecord(items, map, npc);
 			ptx->p_read += 3;
 			return 0;
 		}
@@ -708,7 +797,7 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, PIYOPI
 		{
 			//Load game
 			PlaySoundObject(SOUND_ID_SAVE, SOUND_MODE_PLAY);
-			if (FALSE)//LoadRecord(&items->code, &map->data, npc))
+			if (LoadRecord(items, map, npc))
 			{
 				//Start from loaded game
 				gMC.no_event = 100;

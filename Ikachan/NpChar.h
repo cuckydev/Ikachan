@@ -26,9 +26,11 @@ struct NPCHAR
 
 struct MAP; //prototype
 struct FRAME; //prototype
+struct EVENT_SCR; //prototype
 
 void InitNpChar(NPCHAR *npc);
 void PutNpChar(NPCHAR *npc, FRAME *frame);
 void ActNpChar(NPCHAR *npc);
 void HitNpCharMap(NPCHAR *npc, MAP *map);
+void HitMyCharNpChar(NPCHAR *npc, EVENT_SCR *event_scr);
 BOOL ReloadNpChar(NPCHAR *npc);
