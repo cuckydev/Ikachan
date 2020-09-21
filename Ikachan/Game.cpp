@@ -11,6 +11,7 @@
 #include "NpChar.h"
 #include "PiyoPiyo.h"
 #include "Editor.h"
+#include "Boss.h"
 #include <stdio.h>
 
 DWORD gKeyTrg, gMouseTrg, gMouseTrg2;
@@ -103,6 +104,7 @@ BOOL Game(HWND hWnd)
 	InitEventScript(&event_scr);
 	InitMyChar();
 	InitNpChar(npc);
+	InitBoss();
 	LoadNpChar(npc);
 	InitTextObject(NULL);
 	
@@ -271,6 +273,13 @@ BOOL Game(HWND hWnd)
 			//Draw background
 			PutBack(&frame);
 			PutMapBack(&map, frame.x, frame.y);
+			
+			//Update and draw Iron Head
+			if (!event_scr.msg_box)
+				ActBoss();
+			if (gMC.unit != 2)
+				PutBoss(&frame);
+			HitMyCharBoss(&event_scr);
 			
 			//Update and draw NPCs
 			HitNpCharMap(npc, &map);

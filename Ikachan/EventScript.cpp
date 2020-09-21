@@ -6,6 +6,7 @@
 #include "Player.h"
 #include "Game.h"
 #include "Editor.h"
+#include "Boss.h"
 #include <stdio.h>
 
 #define IS_COMMAND(c1, c2) (ptx->data[ptx->p_read] == '<' && ptx->data[ptx->p_read + 1] == (c1) && ptx->data[ptx->p_read + 2] == (c2))
@@ -698,7 +699,6 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, PIYOPI
 			x = GetEventScriptNo(ptx);
 			ptx->p_read++;
 			y = GetEventScriptNo(ptx);
-			ptx->p_read++;
 
 			//Set NPC
 			short xm = x - (npc[z].x / 16 / 0x400);
@@ -821,7 +821,7 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, PIYOPI
 		if (IS_COMMAND('c','e'))
 		{
 			ReloadNpChar(npc);
-			//InitBoss();
+			InitBoss();
 			ptx->p_read += 3;
 			return 0;
 		}
@@ -864,6 +864,7 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, PIYOPI
 			//Add 1 to 'people carried count'
 			gMC.carry++;
 			ptx->p_read += 3;
+			PlaySoundObject(SOUND_ID_ITEM, SOUND_MODE_PLAY);
 			return 0;
 		}
 		if (IS_COMMAND('e','j'))
@@ -896,31 +897,36 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, PIYOPI
 		}
 		if (IS_COMMAND('b','o'))
 		{
+			//Start Iron Head fight
 			ptx->p_read += 3;
 			GetEventScriptNo(ptx);
-			//byte_41D88E = 1;
+			gBoss.act_no = 1;
 			return 0;
 		}
 		if (IS_COMMAND('p','p'))
 		{
+			//Resume music
 			ptx->p_read += 3;
 			piyocont->mode = 2;
 			return 0;
 		}
 		if (IS_COMMAND('p','s'))
 		{
+			//Stop music
 			ptx->p_read += 3;
 			piyocont->mode = 3;
 			return 0;
 		}
 		if (IS_COMMAND('p','f'))
 		{
+			//Fade music
 			ptx->p_read += 3;
 			piyocont->mode = 4;
 			return 0;
 		}
 		if (IS_COMMAND('p','d'))
 		{
+			//Change music
 			ptx->p_read += 3;
 			piyocont->track = (char)GetEventScriptNo(ptx);
 			piyocont->mode = 1;
@@ -929,12 +935,14 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, PIYOPI
 		}
 		if (IS_COMMAND('p','h'))
 		{
+			//Set music to lower volume
 			ptx->p_read += 3;
 			piyocont->mode = 5;
 			return 0;
 		}
 		if (IS_COMMAND('p','n'))
 		{
+			//Set music to full volume
 			ptx->p_read += 3;
 			piyocont->mode = 6;
 			return 0;

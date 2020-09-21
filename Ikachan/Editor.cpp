@@ -19,7 +19,7 @@ BOOL LoadNpChar(NPCHAR *npc)
 		fread(&npc[i].cond, 1, 1, fp);
 		fread(&npc[i].type, 1, 1, fp);
 		fread(&npc[i].code_char, 1, 1, fp);
-		fread(&npc[i].x4, 2, 1, fp);
+		fread(&npc[i].code_event, 2, 1, fp);
 		fread(&npc[i].direct, 1, 1, fp);
 		fread(&npc[i].x, 4, 1, fp);
 		fread(&npc[i].y, 4, 1, fp);

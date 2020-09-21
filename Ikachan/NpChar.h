@@ -8,7 +8,7 @@ struct NPCHAR
 	BYTE cond; //x0
 	BYTE type; //x1
 	char code_char; //x2
-	WORD x4; //x4
+	short code_event; //x4
 	short act_wait; //x6
 	char act_no; //x8
 	char ani_no; //x9

@@ -1,6 +1,7 @@
 #include "Map.h"
 #include "Draw.h"
 #include "Player.h"
+#include "Boss.h"
 #include <stdio.h>
 
 BOOL LoadMapData(LPCTSTR path, MAP *map)
@@ -205,7 +206,8 @@ void MoveFrame(FRAME *frame, NPCHAR *npc, MAP *map)
 			ty = npc[frame->npc].y;
 			break;
 		case FRAME_MODE_BOSS:
-			//TODO
+			tx = gBoss.x;
+			ty = gBoss.y;
 			break;
 	}
 	

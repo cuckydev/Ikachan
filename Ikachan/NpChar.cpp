@@ -15,7 +15,7 @@ void InitNpChar(NPCHAR *npc)
 		npc[i].cond = 0;
 		npc[i].type = 0;
 		npc[i].code_char = 0;
-		npc[i].x4 = 0;
+		npc[i].code_event = 0;
 		npc[i].act_wait = 0;
 		npc[i].act_no = 0;
 		npc[i].ani_no = 0;
@@ -721,7 +721,7 @@ void HitMyCharNpChar(NPCHAR *npc, EVENT_SCR *event_scr)
 				//Start NPC's event
 				event_scr->mode = 1;
 				event_scr->x1C = 4;
-				event_scr->event_no = npc->x4;
+				event_scr->event_no = npc->code_event;
 				gMC.no_event = 100;
 				continue;
 			}
@@ -806,7 +806,7 @@ void HitMyCharNpChar(NPCHAR *npc, EVENT_SCR *event_scr)
 							//Start NPC's event
 							event_scr->mode = 1;
 							event_scr->x1C = 4;
-							event_scr->event_no = npc->x4;
+							event_scr->event_no = npc->code_event;
 							gMC.no_event = 100;
 						}
 					}
@@ -815,7 +815,7 @@ void HitMyCharNpChar(NPCHAR *npc, EVENT_SCR *event_scr)
 					//Start NPC's event
 					event_scr->mode = 1;
 					event_scr->x1C = 4;
-					event_scr->event_no = npc->x4;
+					event_scr->event_no = npc->code_event;
 					gMC.no_event = 100;
 					break;
 			}
@@ -842,7 +842,7 @@ BOOL ReloadNpChar(NPCHAR *npc)
 		fread(&event.cond, 1, 1, fp);
 		fread(&event.type, 1, 1, fp);
 		fread(&event.code_char, 1, 1, fp);
-		fread(&event.x4, 2, 1, fp);
+		fread(&event.code_event, 2, 1, fp);
 		fread(&event.direct, 1, 1, fp);
 		fread(&event.x, 4, 1, fp);
 		fread(&event.y, 4, 1, fp);

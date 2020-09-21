@@ -2,8 +2,8 @@
 #include <windows.h>
 #include "System.h"
 
-#define SURFACE_WIDTH  (320)
-#define SURFACE_HEIGHT (240)
+#define SURFACE_WIDTH  (320*16/9)
+#define SURFACE_HEIGHT (320)
 
 enum SURFACE_ID
 {
