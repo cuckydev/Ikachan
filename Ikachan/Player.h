@@ -1,5 +1,6 @@
 #pragma once
 #include "Map.h"
+#include "Effect.h"
 #include <windows.h>
 
 struct MYCHAR
@@ -23,7 +24,7 @@ struct MYCHAR
 	//alignment x21
 	short swim_wait; //x22 x420DFA
 	short dash_wait; //x24 x420DFC
-	char direct; //x26 x420DFE
+	BYTE direct; //x26 x420DFE
 	BOOLEAN airborne; //x27 x420DFF
 	BYTE flag; //x28 x420EE0
 	char carry; //x29 x420EE1
@@ -35,9 +36,9 @@ extern MYCHAR gMC;
 extern short gMycLife[MAX_LEVEL + 1];
 extern short gMycExp[MAX_LEVEL + 1];
 
-void DamageMyChar(char damage);
-void HitMyCharMap(MAP *map);
+void DamageMyChar(CARET_SPAWNER *caret_spawner, char damage);
+void HitMyCharMap(MAP *map, CARET_SPAWNER *caret_spawner);
 void PutMyChar(FRAME *frame);
 void PutMyStatus();
-void ActMyChar();
+void ActMyChar(CARET *caret, CARET_SPAWNER *caret_spawner);
 void InitMyChar();

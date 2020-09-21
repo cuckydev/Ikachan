@@ -70,7 +70,7 @@ RECT rcLineClip = { (SURFACE_WIDTH / 2) - 136, SURFACE_HEIGHT - 50, (SURFACE_WID
 #define FADE_HEIGHT ((SURFACE_HEIGHT + 15) / 16)
 
 //Fading and other screen effects
-BOOL ProcFade(FADE *fade, FRAME *frame)
+BOOL ProcFade(FADE *fade, FRAME *frame, CARET_SPAWNER *caret_spawner)
 {
 	switch (fade->mode)
 	{
@@ -78,6 +78,7 @@ BOOL ProcFade(FADE *fade, FRAME *frame)
 			fade->wait = 0;
 			break;
 		case FADE_MODE_QUAKE:
+		{
 			if (++fade->wait <= 60)
 			{
 				//Shake screen
@@ -85,8 +86,43 @@ BOOL ProcFade(FADE *fade, FRAME *frame)
 				frame->y += Random(-10, 10) << 10;
 				
 				//Create quake particles
+				int bubble_i = FindCaretSpawner(caret_spawner);
+				if (bubble_i != NO_CARET)
+				{
+					CARET_SPAWNER *caretsp = &caret_spawner[bubble_i];
+					caretsp->cond = TRUE;
+					caretsp->type = 1;
+					caretsp->ani_no = 0;
+					caretsp->num = 2;
+					caretsp->x = frame->x + (SURFACE_WIDTH << 9);
+					caretsp->y = frame->y + (SURFACE_HEIGHT << 9);
+					caretsp->rand_moveright = 0;
+					caretsp->rand_moveleft = 0;
+					caretsp->rand_movedown = 0;
+					caretsp->rand_moveup = 0;
+					caretsp->rand_x = (SURFACE_WIDTH / 2) + 53;
+					caretsp->rand_y = (SURFACE_HEIGHT / 2) + 40;
+				}
+				int star_i = FindCaretSpawner(caret_spawner);
+				if (star_i != NO_CARET)
+				{
+					CARET_SPAWNER *caretsp = &caret_spawner[star_i];
+					caretsp->cond = TRUE;
+					caretsp->type = 0;
+					caretsp->ani_no = 0;
+					caretsp->num = 2;
+					caretsp->x = frame->x + (SURFACE_WIDTH << 9);
+					caretsp->y = frame->y + (SURFACE_HEIGHT << 9);
+					caretsp->rand_moveright = 0;
+					caretsp->rand_moveleft = 0;
+					caretsp->rand_movedown = 0;
+					caretsp->rand_moveup = 0;
+					caretsp->rand_x = (SURFACE_WIDTH / 2) + 53;
+					caretsp->rand_y = (SURFACE_HEIGHT / 2) + 40;
+				}
 			}
 			break;
+		}
 		case FADE_MODE_FADEOUT:
 			for (int y = 0; y < FADE_HEIGHT; y++)
 			{
@@ -125,10 +161,44 @@ BOOL ProcFade(FADE *fade, FRAME *frame)
 			if (!(++fade->wait % 4))
 			{
 				//Shake screen
-				frame->x += Random(-10, 10) << 10;
-				frame->y += Random(-10, 10) << 10;
+				frame->x += Random(-1, 1) << 10;
+				frame->y += Random(-1, 1) << 10;
 				
 				//Create quake particles
+				int bubble_i = FindCaretSpawner(caret_spawner);
+				if (bubble_i != NO_CARET)
+				{
+					CARET_SPAWNER *caretsp = &caret_spawner[bubble_i];
+					caretsp->cond = TRUE;
+					caretsp->type = 1;
+					caretsp->ani_no = 0;
+					caretsp->num = 2;
+					caretsp->x = frame->x + (SURFACE_WIDTH << 9);
+					caretsp->y = frame->y + (SURFACE_HEIGHT << 9);
+					caretsp->rand_moveright = 0;
+					caretsp->rand_moveleft = 0;
+					caretsp->rand_movedown = 0;
+					caretsp->rand_moveup = 0;
+					caretsp->rand_x = (SURFACE_WIDTH / 2) + 53;
+					caretsp->rand_y = (SURFACE_HEIGHT / 2) + 40;
+				}
+				int star_i = FindCaretSpawner(caret_spawner);
+				if (star_i != NO_CARET)
+				{
+					CARET_SPAWNER *caretsp = &caret_spawner[star_i];
+					caretsp->cond = TRUE;
+					caretsp->type = 0;
+					caretsp->ani_no = 0;
+					caretsp->num = 2;
+					caretsp->x = frame->x + (SURFACE_WIDTH << 9);
+					caretsp->y = frame->y + (SURFACE_HEIGHT << 9);
+					caretsp->rand_moveright = 0;
+					caretsp->rand_moveleft = 0;
+					caretsp->rand_movedown = 0;
+					caretsp->rand_moveup = 0;
+					caretsp->rand_x = (SURFACE_WIDTH / 2) + 53;
+					caretsp->rand_y = (SURFACE_HEIGHT / 2) + 40;
+				}
 			}
 			break;
 	}
@@ -847,7 +917,7 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, PIYOPI
 		{
 			//Restart
 			gMC.carry = 0;
-			gMC.cond = 1;
+			gMC.cond = TRUE;
 			gMC.unit = 0;
 			gMC.ani_no = 0;
 			gMC.ani_wait = 0;

@@ -106,7 +106,7 @@ void PutBoss(FRAME *frame)
 	}
 }
 
-void ActBoss()
+void ActBoss(CARET_SPAWNER *caret_spawner)
 {
 	//Decrement shock counter
 	if (gBoss.shock > 0)
@@ -128,13 +128,47 @@ void ActBoss()
 			//Swim in moving direction
 			if (gBoss.xm < 0 && gBoss.direct == 1)
 			{
+				//Turn around with bubble effect
 				gBoss.direct = 0;
-				//Create effect
+				int bubble_i = FindCaretSpawner(caret_spawner);
+				if (bubble_i != NO_CARET)
+				{
+					CARET_SPAWNER *caretsp = &caret_spawner[bubble_i];
+					caretsp->cond = TRUE;
+					caretsp->type = 1;
+					caretsp->ani_no = 0;
+					caretsp->num = 5;
+					caretsp->x = gBoss.x + 0xC000;
+					caretsp->y = gBoss.y + 0x3000;
+					caretsp->rand_moveright = 0x400;
+					caretsp->rand_moveleft = 0x200;
+					caretsp->rand_movedown = 0x400;
+					caretsp->rand_moveup = -0x400;
+					caretsp->rand_x = 16;
+					caretsp->rand_y = 12;
+				}
 			}
 			if (gBoss.xm > 0 && gBoss.direct == 0)
 			{
+				//Turn around with bubble effect
 				gBoss.direct = 1;
-				//Create effect
+				int bubble_i = FindCaretSpawner(caret_spawner);
+				if (bubble_i != NO_CARET)
+				{
+					CARET_SPAWNER *caretsp = &caret_spawner[bubble_i];
+					caretsp->cond = TRUE;
+					caretsp->type = 1;
+					caretsp->ani_no = 0;
+					caretsp->num = 5;
+					caretsp->x = gBoss.x + 0x4000;
+					caretsp->y = gBoss.y + 0x3000;
+					caretsp->rand_moveright = -0x200;
+					caretsp->rand_moveleft = -0x400;
+					caretsp->rand_movedown = 0x400;
+					caretsp->rand_moveup = -0x400;
+					caretsp->rand_x = 16;
+					caretsp->rand_y = 12;
+				}
 			}
 			
 			//Animate
@@ -228,6 +262,26 @@ void ActBoss()
 				gBoss.act_wait--;
 			
 			//Charge effect
+			if ((gBoss.act_wait % 5) == 0)
+			{
+				int star_i = FindCaretSpawner(caret_spawner);
+				if (star_i != NO_CARET)
+				{
+					CARET_SPAWNER *caretsp = &caret_spawner[star_i];
+					caretsp->cond = TRUE;
+					caretsp->type = 0;
+					caretsp->ani_no = 0;
+					caretsp->num = 1;
+					caretsp->x = gBoss.x + 0x8000;
+					caretsp->y = gBoss.y + 0x3000;
+					caretsp->rand_moveright = -gBoss.xm;
+					caretsp->rand_moveleft = -gBoss.xm;
+					caretsp->rand_movedown = 0x400;
+					caretsp->rand_moveup = -0x244;
+					caretsp->rand_x = 16;
+					caretsp->rand_y = 12;
+				}
+			}
 			
 			//Set animation and move
 			gBoss.ani_no = 2;
@@ -237,7 +291,7 @@ void ActBoss()
 	}
 }
 
-void DamageBoss(char damage)
+void DamageBoss(CARET_SPAWNER *caret_spawner, char damage)
 {
 	if (gBoss.shock == 0)
 	{
@@ -247,14 +301,27 @@ void DamageBoss(char damage)
 		if (gBoss.life < 0)
 			gBoss.life = 0;
 		
-		//Create damage indicator effect
+		//Create damage indicator
+		int dmg_i = FindCaretSpawner(caret_spawner);
+		if (dmg_i != NO_CARET)
+		{
+			CARET_SPAWNER *caretsp = &caret_spawner[dmg_i];
+			caretsp->cond = TRUE;
+			caretsp->type = 2;
+			caretsp->ani_no = 10 - damage;
+			caretsp->num = 1;
+			caretsp->x = gBoss.x + 0x2000;
+			caretsp->y = gBoss.y - 0x1000;
+			caretsp->rand_x = 1;
+			caretsp->rand_y = 0;
+		}
 		
 		//Play hurt sound
 		PlaySoundObject(20, 1);
 	}
 }
 
-void HitMyCharBoss(EVENT_SCR *event_scr)
+void HitMyCharBoss(EVENT_SCR *event_scr, CARET_SPAWNER *caret_spawner)
 {
 	BYTE flag = 0;
 	BOOLEAN touch = FALSE; //???
@@ -330,9 +397,9 @@ void HitMyCharBoss(EVENT_SCR *event_scr)
 							gBoss.ym = -0x400;
 							gMC.ym = 0x400;
 							if (gMC.unit == 1)
-								DamageBoss(3);
+								DamageBoss(caret_spawner, 3);
 							else
-								DamageBoss(1);
+								DamageBoss(caret_spawner, 1);
 						}
 						else if (gMC.unit == 1)
 						{
@@ -340,7 +407,7 @@ void HitMyCharBoss(EVENT_SCR *event_scr)
 								gBoss.xm = -0x400;
 							if (gMC.direct == 1)
 								gBoss.xm = 0x400;
-							DamageBoss(3);
+							DamageBoss(caret_spawner, 3);
 						}
 					}
 					break;
@@ -351,9 +418,9 @@ void HitMyCharBoss(EVENT_SCR *event_scr)
 						gBoss.ym = -0x400;
 						gMC.ym = 0x400;
 						if (gMC.unit == 1)
-							DamageBoss(3);
+							DamageBoss(caret_spawner, 3);
 						else
-							DamageBoss(1);
+							DamageBoss(caret_spawner, 1);
 					}
 					else if (gMC.shock == 0)
 					{
@@ -361,7 +428,7 @@ void HitMyCharBoss(EVENT_SCR *event_scr)
 							gMC.xm = -0x400;
 						if (gMC.x > gBoss.x + 0x6000)
 							gMC.xm = 0x400;
-						DamageMyChar(3);
+						DamageMyChar(caret_spawner, 3);
 					}
 					break;
 			}

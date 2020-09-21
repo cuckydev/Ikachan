@@ -12,7 +12,7 @@ void InitNpChar(NPCHAR *npc)
 {
 	for (int i = 0; i < MAX_NPCS; i++)
 	{
-		npc[i].cond = 0;
+		npc[i].cond = FALSE;
 		npc[i].type = 0;
 		npc[i].code_char = 0;
 		npc[i].code_event = 0;
@@ -700,7 +700,7 @@ void HitNpCharMap(NPCHAR *npc, MAP *map)
 	}
 }
 
-void HitMyCharNpChar(NPCHAR *npc, EVENT_SCR *event_scr)
+void HitMyCharNpChar(NPCHAR *npc, EVENT_SCR *event_scr, CARET_SPAWNER *caret_spawner)
 {
 	for (int i = 0; i < MAX_NPCS; i++, npc++)
 	{
@@ -779,7 +779,7 @@ void HitMyCharNpChar(NPCHAR *npc, EVENT_SCR *event_scr)
 							gMC.xm = -0x400;
 						if (gMC.x > npc->x)
 							gMC.xm = 0x400;
-						DamageMyChar(npc_damage[npc->code_char]);
+						DamageMyChar(caret_spawner, npc_damage[npc->code_char]);
 					}
 					
 					//Check if we should hurt the NPC
@@ -795,13 +795,41 @@ void HitMyCharNpChar(NPCHAR *npc, EVENT_SCR *event_scr)
 						else
 						{
 							//Award us experience
-							PlaySoundObject(10, 1);
+							PlaySoundObject(SOUND_ID_WIN, SOUND_MODE_PLAY);
 							gMC.exp += npc_exp[npc->code_char];
-							//Show how much exp we gained
+							int exp_i = FindCaretSpawner(caret_spawner);
+							if (exp_i != 0xFFFFFF )
+							{
+								CARET_SPAWNER *caretsp = &caret_spawner[exp_i];
+								caretsp->cond = TRUE;
+								caretsp->type = 2;
+								caretsp->ani_no = npc_exp[npc->code_char] + 10;
+								caretsp->num = 1;
+								caretsp->x = npc->x + 0x2000;
+								caretsp->y = npc->y - 0x1000;
+								caretsp->rand_x = 1;
+								caretsp->rand_y = 0;
+							}
 							
 							//Destroy the NPC
-							npc->cond = 0;
-							//NPC kill effect
+							npc->cond = FALSE;
+							int dead_i = FindCaretSpawner(caret_spawner);
+							if (dead_i != 0xFFFFFF )
+							{
+								CARET_SPAWNER *caretsp = &caret_spawner[dead_i];
+								caretsp->cond = TRUE;
+								caretsp->type = 0;
+								caretsp->ani_no = 0;
+								caretsp->num = 6;
+								caretsp->x = npc->x + 0x2000;
+								caretsp->y = npc->y + 0x2000;
+								caretsp->rand_moveright = 0x800;
+								caretsp->rand_moveleft = -0x800;
+								caretsp->rand_movedown = -0x200;
+								caretsp->rand_moveup = -0x800;
+								caretsp->rand_x = 8;
+								caretsp->rand_y = 8;
+							}
 							
 							//Start NPC's event
 							event_scr->mode = 1;

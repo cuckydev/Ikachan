@@ -3,6 +3,7 @@
 #include "NpChar.h"
 #include "Item.h"
 #include "PiyoPiyo.h"
+#include "Effect.h"
 #include <windows.h>
 
 enum FADE_MODE
@@ -45,7 +46,7 @@ struct EVENT_SCR
 	BOOLEAN select; //x22
 };
 
-BOOL ProcFade(FADE *fade, FRAME *frame);
+BOOL ProcFade(FADE *fade, FRAME *frame, CARET_SPAWNER *caret_spawner);
 void PutNumber(int x, int y, int no);
 void PutNumber2(int x, int y, int no);
 void DebugPutText(LPCTSTR text);

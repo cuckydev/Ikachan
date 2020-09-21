@@ -1,4 +1,5 @@
 #pragma once
+#include "Effect.h"
 #include <windows.h>
 
 #define MAX_NPCS (100)
@@ -32,5 +33,5 @@ void InitNpChar(NPCHAR *npc);
 void PutNpChar(NPCHAR *npc, FRAME *frame);
 void ActNpChar(NPCHAR *npc);
 void HitNpCharMap(NPCHAR *npc, MAP *map);
-void HitMyCharNpChar(NPCHAR *npc, EVENT_SCR *event_scr);
+void HitMyCharNpChar(NPCHAR *npc, EVENT_SCR *event_scr, CARET_SPAWNER *caret_spawner);
 BOOL ReloadNpChar(NPCHAR *npc);

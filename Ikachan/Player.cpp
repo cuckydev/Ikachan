@@ -7,18 +7,18 @@
 MYCHAR gMC;
 
 //Unit act functions
-void ActMyChar_Normal();
-void ActMyChar_Dash();
-void ActMyChar_Ship();
+void ActMyChar_Normal(CARET *caret, CARET_SPAWNER *caret_spawner);
+void ActMyChar_Dash(CARET *caret, CARET_SPAWNER *caret_spawner);
+void ActMyChar_Ship(CARET *caret, CARET_SPAWNER *caret_spawner);
 
-typedef void (*MYCHAR_ACT)();
+typedef void (*MYCHAR_ACT)(CARET*, CARET_SPAWNER*);
 MYCHAR_ACT act[3] = {ActMyChar_Normal, ActMyChar_Dash, ActMyChar_Ship};
 
 //Life and exp per level
 short gMycLife[MAX_LEVEL + 1] = { 4, 8, 12, 18, 26, 34, 62 };
 short gMycExp[MAX_LEVEL + 1] = { 8, 28, 52, 74, 102, 360, 852 };
 
-void DamageMyChar(char damage)
+void DamageMyChar(CARET_SPAWNER *caret_spawner, char damage)
 {
 	//Check if we're invulnerable
 	if (gMC.shock == 0)
@@ -29,7 +29,20 @@ void DamageMyChar(char damage)
 		if (gMC.life < 0)
 			gMC.life = 0;
 		
-		//Create damage indicator effect
+		//Show us how much damage we took
+		int damage_i = FindCaretSpawner(caret_spawner);
+		if (damage_i != NO_CARET)
+		{
+			CARET_SPAWNER *caretsp = &caret_spawner[damage_i];
+			caretsp->cond = TRUE;
+			caretsp->type = 2;
+			caretsp->ani_no = 10 - damage;
+			caretsp->num = 1;
+			caretsp->x = gMC.x + 0x2000;
+			caretsp->y = gMC.y - 0x1000;
+			caretsp->rand_x = 1;
+			caretsp->rand_y = 0;
+		}
 		
 		if (gMC.life != 0)
 		{
@@ -44,6 +57,23 @@ void DamageMyChar(char damage)
 			gMC.dead = TRUE;
 			
 			//Create death effect
+			int dead_i = FindCaretSpawner(caret_spawner);
+			if (dead_i != NO_CARET)
+			{
+				CARET_SPAWNER *caretsp = &caret_spawner[dead_i];
+				caretsp->cond = TRUE;
+				caretsp->type = 0;
+				caretsp->ani_no = 0;
+				caretsp->num = 30;
+				caretsp->x = gMC.x + 0x2000;
+				caretsp->y = gMC.y + 0x2000;
+				caretsp->rand_moveright = 0xC00;
+				caretsp->rand_moveleft = -0xC00;
+				caretsp->rand_movedown = 0x200;
+				caretsp->rand_moveup = -0xC00;
+				caretsp->rand_x = 1;
+				caretsp->rand_y = 0;
+			}
 		}
 	}
 }
@@ -133,7 +163,7 @@ BYTE JudgeHitMyCharBlock(int x, int y, char flag)
 	return gMC.flag;
 }
 
-BYTE JudgeHitMyCharSnack(int x, int y, BYTE flag, MAP *map)
+BYTE JudgeHitMyCharSnack(int x, int y, BYTE flag, CARET_SPAWNER *caret_spawner, MAP *map)
 {
 	//Reset collision flag for some reason
 	gMC.flag = 0;
@@ -222,14 +252,33 @@ BYTE JudgeHitMyCharSnack(int x, int y, BYTE flag, MAP *map)
 	//Break block
 	if ((gMC.unit == 1 && gMC.flag != 8 && gMC.flag) || ((gMC.equip & 1) && (gMC.flag & 2)))
 	{
-		//Play break sound, remove block, and create effect
+		//Destroy block
 		PlaySoundObject(SOUND_ID_CRASH, SOUND_MODE_PLAY);
 		map->data[x + map->width * y] = 0;
+		
+		//Create bubbles
+		int bubble_i = FindCaretSpawner(caret_spawner);
+		if (bubble_i != NO_CARET)
+		{
+			CARET_SPAWNER *caretsp = &caret_spawner[bubble_i];
+			caretsp->cond = TRUE;
+			caretsp->type = 1;
+			caretsp->ani_no = 0;
+			caretsp->num = 5;
+			caretsp->x = (x * 16 + 8) << 10;
+			caretsp->y = (y * 16 + 8) << 10;
+			caretsp->rand_moveright = 0x400;
+			caretsp->rand_moveleft = -0x400;
+			caretsp->rand_movedown = 0x400;
+			caretsp->rand_moveup = -0x400;
+			caretsp->rand_x = 8;
+			caretsp->rand_y = 8;
+		}
 	}
 	return gMC.flag;
 }
 
-void JudgeHitMyCharDamage(int x, int y)
+void JudgeHitMyCharDamage(int x, int y, CARET_SPAWNER *caret_spawner)
 {
 	if ((gMC.x / 0x400) < (x * 16 + 10) &&
 		(gMC.x / 0x400) > (x * 16 - 10) &&
@@ -237,7 +286,7 @@ void JudgeHitMyCharDamage(int x, int y)
 		(gMC.y / 0x400) > (y * 16 - 10))
 	{
 		//Take damage
-		DamageMyChar(3);
+		DamageMyChar(caret_spawner, 3);
 	}
 }
 
@@ -268,24 +317,58 @@ void JudgeHitMyCharVector(int x, int y, BYTE type)
 	}
 }
 
-void JudgeHitMyCharItem(int x, int y, MAP *map)
+void JudgeHitMyCharItem(int x, int y, CARET_SPAWNER *caret_spawner, MAP *map)
 {
 	if ((gMC.x / 0x400) < (x * 16 + 8) &&
 		(gMC.x / 0x400) > (x * 16 - 8) &&
 		(gMC.y / 0x400) < (y * 16 + 8) &&
 		(gMC.y / 0x400) > (y * 16 - 8))
 	{
-		//Remove item, play item sound, add exp and life, and create effects
+		//Remove item, play item sound, add exp and life
 		map->data[x + map->width * y] = 0;
 		PlaySoundObject(SOUND_ID_ITEM, SOUND_MODE_PLAY);
 		gMC.life++;
 		gMC.exp++;
 		if (gMC.life > gMycLife[gMC.level])
 			gMC.life = gMycLife[gMC.level];
+		
+		//Create '+1' experience indicator
+		int exp_i = FindCaretSpawner(caret_spawner);
+		if (exp_i != NO_CARET)
+		{
+			CARET_SPAWNER *caretsp = &caret_spawner[exp_i];
+			caretsp->cond = TRUE;
+			caretsp->type = 2;
+			caretsp->ani_no = 11;
+			caretsp->num = 1;
+			caretsp->x = gMC.x + 0x2000;
+			caretsp->y = gMC.y - 0x1000;
+			caretsp->rand_x = 1;
+			caretsp->rand_y = 0;
+		}
+		
+		//Create stars
+		int star_i = FindCaretSpawner(caret_spawner);
+		if (star_i != NO_CARET)
+		{
+			CARET_SPAWNER *caretsp = &caret_spawner[star_i];
+			caretsp->cond = TRUE;
+			caretsp->type = 0;
+			caretsp->ani_no = 0;
+			caretsp->num = 4;
+			caretsp->x = gMC.x + 0x2000;
+			caretsp->y = gMC.y + 0x2000;
+			caretsp->rand_moveright = 0x800;
+			caretsp->rand_moveleft = -0x800;
+			caretsp->rand_movedown = 0;
+			caretsp->rand_moveup = -0x800;
+			caretsp->rand_x = 1;
+			caretsp->rand_y = 0;
+		}
 	}
 }
 
-void HitMyCharMap(MAP *map)
+void HitMyCharMap(MAP *map, CARET_SPAWNER *caret_spawner)
 {
 	//Collision offsets and flags
 	char offx[4];
@@ -336,14 +419,14 @@ void HitMyCharMap(MAP *map)
 			JudgeHitMyCharVector(x + offx[i], y + offy[i], part);
 		//Damage collision
 		if (part >= 0xA0 && part < 0xC0)
-			JudgeHitMyCharDamage(x + offx[i], y + offy[i]);
+			JudgeHitMyCharDamage(x + offx[i], y + offy[i], caret_spawner);
 		//Item collision
 		else if (part >= 0x40 && part < 0x60)
-			JudgeHitMyCharItem(x + offx[i], y + offy[i], map);
+			JudgeHitMyCharItem(x + offx[i], y + offy[i], caret_spawner, map);
 		//Snack collision
 		else if (part < 0xE0 || part >= 0x100)
 			v19 -= flag1[i];
-		else if ((JudgeHitMyCharSnack(x + offx[i], y + offy[i], flag2[i], map) & 8) == 0)
+		else if ((JudgeHitMyCharSnack(x + offx[i], y + offy[i], flag2[i], caret_spawner, map) & 8) == 0)
 			v19 -= flag1[i];
 	}
 	
@@ -357,6 +440,21 @@ void HitMyCharMap(MAP *map)
 			gMC.level = MAX_LEVEL;
 		else
 			PlaySoundObject(SOUND_ID_LEVELUP, SOUND_MODE_PLAY);
+		
+		//Create 'Level Up' text
+		int levup_i = FindCaretSpawner(caret_spawner);
+		if (levup_i != NO_CARET)
+		{
+			CARET_SPAWNER *caretsp = &caret_spawner[levup_i];
+			caretsp->cond = TRUE;
+			caretsp->type = 3;
+			caretsp->ani_no = 0;
+			caretsp->num = 1;
+			caretsp->x = gMC.x + 0x2000;
+			caretsp->y = gMC.y - 0x1000;
+			caretsp->rand_x = 1;
+			caretsp->rand_y = 0;
+		}
 	}
 	
 	//Set airborne flag
@@ -428,7 +526,7 @@ int swim_ym[3] = { -0x200, -0x200, -0x2D4 };
 int dash_xm[3] = { -0xC00, 0xC00, 0 };
 int dash_ym[3] = { 0, 0, -0xC00 };
 
-void ActMyChar_Normal()
+void ActMyChar_Normal(CARET *caret, CARET_SPAWNER *caret_spawner)
 {
 	//Get direction
 	gMC.direct = 2;
@@ -440,8 +538,34 @@ void ActMyChar_Normal()
 	//Swim
 	if ((gKeyTrg & KEY_Z) && gMC.swim_wait == 0)
 	{
-		//Swim sound and particle
-		PlaySoundObject(SOUND_ID_DASH, SOUND_MODE_PLAY);
+		//Swim sound and bubble
+		int caret_i = FindCaret(caret);
+		if (caret_i != NO_CARET)
+		{
+			PlaySoundObject(1, 1);
+			caret += caret_i; //... What the hell?
+			caret->type = 1;
+			caret->xm = -swim_xm[gMC.direct];
+			caret->ym = -swim_ym[gMC.direct];
+			caret->cond = TRUE;
+			caret->ani_no = 0;
+			caret->ani_wait = 0;
+			switch (gMC.direct)
+			{
+				case 0:
+					caret->x = gMC.x + 14336;
+					caret->y = gMC.y + 12288;
+					break;
+				case 1:
+					caret->x = gMC.x + 2048;
+					caret->y = gMC.y + 12288;
+					break;
+				case 2:
+					caret->x = gMC.x + 9216;
+					caret->y = gMC.y + 14336;
+					break;
+			}
+		}
 
 		//Play animation and disable for 8 frames
 		gMC.swim_wait = 8;
@@ -470,7 +594,33 @@ void ActMyChar_Normal()
 		//Play dash sound
 		PlaySoundObject(SOUND_ID_GO, SOUND_MODE_PLAY);
 
-		//Dash particle
+		//Dash bubble
+		int caret_i = FindCaret(caret);
+		if (caret_i != NO_CARET)
+		{
+			CARET *caretp = &caret[caret_i];
+			caretp->type = 1;
+			caretp->xm = dash_xm[gMC.direct] / -8;
+			caretp->ym = dash_ym[gMC.direct] / -8;
+			caretp->cond = TRUE;
+			caretp->ani_no = 0;
+			caretp->ani_wait = 0;
+			switch (gMC.direct)
+			{
+				case 0:
+					caretp->x = gMC.x + 14336;
+					caretp->y = gMC.y + 12288;
+					break;
+				case 1:
+					caretp->x = gMC.x + 2048;
+					caretp->y = gMC.y + 12288;
+					break;
+				case 2:
+					caretp->x = gMC.x + 9216;
+					caretp->y = gMC.y + 14336;
+					break;
+			}
+		}
 
 		//Dash velocity and set to dash mode
 		gMC.xm = dash_xm[gMC.direct];
@@ -536,13 +686,29 @@ void ActMyChar_Normal()
 		--gMC.no_event;
 }
 
-void ActMyChar_Dash()
+void ActMyChar_Dash(CARET *caret, CARET_SPAWNER *caret_spawner)
 {
 	//Decrease dash timer and stop dashing when depleted
 	if (--gMC.dash_wait <= 0)
 		gMC.unit = 0;
 	
-	//Dash particles
+	//Dash bubble
+	if ((gMC.dash_wait % 4) == 0)
+	{
+		int caret_i = FindCaret(caret);
+		if (caret_i != NO_CARET)
+		{
+			CARET *caretp = &caret[caret_i];
+			caretp->type = 1;
+			caretp->xm = (dash_xm[gMC.direct] / -8) + Random(-0x200, 0x200);
+			caretp->ym = (dash_ym[gMC.direct] / -8) + Random(-0x200, 0x200);
+			caretp->cond = TRUE;
+			caretp->ani_no = 0;
+			caretp->ani_wait = 0;
+			caretp->x = gMC.x + 0x2000;
+			caretp->y = gMC.y + 0x2000;
+		}
+	}
 	
 	//Move and use dash animation
 	gMC.x += gMC.xm;
@@ -554,9 +720,26 @@ void ActMyChar_Dash()
 		--gMC.shock;
 }
 
-void ActMyChar_Ship()
+void ActMyChar_Ship(CARET *caret, CARET_SPAWNER *caret_spawner)
 {
 	//Create effect
+	int caretsp_i = FindCaretSpawner(caret_spawner);
+	if (caretsp_i != NO_CARET)
+	{
+		CARET_SPAWNER *caretsp = &caret_spawner[caretsp_i];
+		caretsp->cond = TRUE;
+		caretsp->type = 0;
+		caretsp->ani_no = 0;
+		caretsp->num = 1;
+		caretsp->x = gMC.x + 0x2000;
+		caretsp->y = gMC.y + 0x6000;
+		caretsp->rand_moveright = 0xC00;
+		caretsp->rand_moveleft = -0xC00;
+		caretsp->rand_movedown = 0xC00;
+		caretsp->rand_moveup = 0;
+		caretsp->rand_x = 1;
+		caretsp->rand_y = 0;
+	}
 	
 	//Fly up
 	gMC.xm = 0;
@@ -567,15 +750,15 @@ void ActMyChar_Ship()
 		gMC.shock = 0;
 }
 
-void ActMyChar()
+void ActMyChar(CARET *caret, CARET_SPAWNER *caret_spawner)
 {
-	act[gMC.unit]();
+	act[gMC.unit](caret, caret_spawner);
 }
 
 //Initalize MyChar
 void InitMyChar()
 {
-	gMC.cond = 1;
+	gMC.cond = TRUE;
 	gMC.equip = 0;
 	gMC.dead = 0;
 	gMC.level = 0;

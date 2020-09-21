@@ -12,6 +12,7 @@
 #include "PiyoPiyo.h"
 #include "Editor.h"
 #include "Boss.h"
+#include "Effect.h"
 #include <stdio.h>
 
 DWORD gKeyTrg, gMouseTrg, gMouseTrg2;
@@ -91,6 +92,8 @@ BOOL Game(HWND hWnd)
 	PIX_SCR pix_scr;
 	MAP map;
 	NPCHAR npc[MAX_NPCS];
+	CARET caret[MAX_CARETS];
+	CARET_SPAWNER caret_spawner[MAX_CARET_SPAWNERS];
 	FRAME frame;
 	PIYOPIYO_CONTROL piyocont;
 	DWORD tick;
@@ -108,13 +111,19 @@ BOOL Game(HWND hWnd)
 	LoadNpChar(npc);
 	InitTextObject(NULL);
 	
+	//Initialize frame
+	frame.x = gMC.x - (SURFACE_WIDTH << 9);
+	frame.y = gMC.y - (SURFACE_HEIGHT << 9);
+	
 	//Initialize fade
 	fade.mode = FADE_MODE_NONE;
 	fade.mask = FALSE;
 	
-	//Initialize frame
-	frame.x = gMC.x - (SURFACE_WIDTH << 9);
-	frame.y = gMC.y - (SURFACE_HEIGHT << 9);
+	//Initialize carets
+	for (int i = 0; i < MAX_CARET_SPAWNERS; i++)
+		caret_spawner[i].cond = FALSE;
+	for (int i = 0; i < MAX_CARETS; i++)
+		caret[i].cond = FALSE;
 	
 	//Load fade surface here for some reason
 	MakeSurface_File("Pbm\\Fade.pbm", SURFACE_ID_FADE);
@@ -142,7 +151,7 @@ BOOL Game(HWND hWnd)
 		if (gKeyTrg & KEY_Z)
 			fade.mode = FADE_MODE_FADEOUT;
 		PutOpening(&opening);
-		if (ProcFade(&fade, &frame) == TRUE)
+		if (ProcFade(&fade, &frame, caret_spawner) == TRUE)
 			mode = GAMEMODE_LOAD;
 		
 		//End frame
@@ -276,10 +285,10 @@ BOOL Game(HWND hWnd)
 			
 			//Update and draw Iron Head
 			if (!event_scr.msg_box)
-				ActBoss();
+				ActBoss(caret_spawner);
 			if (gMC.unit != 2)
 				PutBoss(&frame);
-			HitMyCharBoss(&event_scr);
+			HitMyCharBoss(&event_scr, caret_spawner);
 			
 			//Update and draw NPCs
 			HitNpCharMap(npc, &map);
@@ -292,13 +301,13 @@ BOOL Game(HWND hWnd)
 			{
 				//Update player
 				if (event_scr.msg_box == FALSE)
-					ActMyChar();
+					ActMyChar(caret, caret_spawner);
 				
 				//Player collision
 				if (gMC.unit != 2)
 				{
-					HitMyCharNpChar(npc, &event_scr);
-					HitMyCharMap(&map);
+					HitMyCharNpChar(npc, &event_scr, caret_spawner);
+					HitMyCharMap(&map, caret_spawner);
 				}
 				
 				//Draw player
@@ -318,8 +327,12 @@ BOOL Game(HWND hWnd)
 			PutMapFront(&map, frame.x, frame.y);
 			PutMapVector(&map, frame.x, frame.y);
 			
+			//Run carets
+			ProcCaret(caret, &map, &frame);
+			ProcCaretSpawner(caret_spawner, caret);
+			
 			//Run event
-			ProcFade(&fade, &frame);
+			ProcFade(&fade, &frame, caret_spawner);
 			switch (EventScriptProc(&event_scr, &items, npc, &map, &piyocont, &fade, &frame))
 			{
 				case 1:

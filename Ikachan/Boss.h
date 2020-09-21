@@ -32,5 +32,5 @@ extern BOSS gBoss;
 
 void InitBoss();
 void PutBoss(FRAME *frame);
-void ActBoss();
-void HitMyCharBoss(EVENT_SCR *event_scr);
+void ActBoss(CARET_SPAWNER *caret_spawner);
+void HitMyCharBoss(EVENT_SCR *event_scr, CARET_SPAWNER *caret_spawner);

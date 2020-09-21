@@ -129,6 +129,9 @@
 				RelativePath="..\Ikachan\Editor.cpp">
 			</File>
 			<File
+				RelativePath="..\Ikachan\Effect.cpp">
+			</File>
+			<File
 				RelativePath="..\Ikachan\EventScript.cpp">
 			</File>
 			<File
@@ -183,6 +186,9 @@
 			</File>
 			<File
 				RelativePath="..\Ikachan\Editor.h">
+			</File>
+			<File
+				RelativePath="..\Ikachan\Effect.h">
 			</File>
 			<File
 				RelativePath="..\Ikachan\EventScript.h">
