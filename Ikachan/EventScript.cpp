@@ -68,6 +68,7 @@ RECT rcLineClip = { (SURFACE_WIDTH / 2) - 136, SURFACE_HEIGHT - 50, (SURFACE_WID
 //Fade dimensions
 #define FADE_WIDTH ((SURFACE_WIDTH + 15) / 16)
 #define FADE_HEIGHT ((SURFACE_HEIGHT + 15) / 16)
+#define FADE_TIME (FADE_WIDTH + FADE_HEIGHT + 15)
 
 //Fading and other screen effects
 BOOL ProcFade(FADE *fade, FRAME *frame, CARET_SPAWNER *caret_spawner)
@@ -136,7 +137,7 @@ BOOL ProcFade(FADE *fade, FRAME *frame, CARET_SPAWNER *caret_spawner)
 					PutBitmap3(&grcFull, x * 16, ((FADE_HEIGHT - 1) - y) * 16, &rcFade[frame], SURFACE_ID_FADE);
 				}
 			}
-			if (++fade->wait <= 50)
+			if (++fade->wait <= FADE_TIME)
 				break;
 			fade->mode = 0;
 			return TRUE;
@@ -153,7 +154,7 @@ BOOL ProcFade(FADE *fade, FRAME *frame, CARET_SPAWNER *caret_spawner)
 					PutBitmap3(&grcFull, x * 16, ((FADE_HEIGHT - 1) - y) * 16, &rcFade[15 - frame], SURFACE_ID_FADE);
 				}
 			}
-			if (++fade->wait <= 50)
+			if (++fade->wait <= FADE_TIME)
 				break;
 			fade->mode = 0;
 			return TRUE;

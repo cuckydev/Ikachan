@@ -111,6 +111,10 @@ BOOL Game(HWND hWnd)
 	LoadNpChar(npc);
 	InitTextObject(NULL);
 	
+	//Initialize editor
+	gEditorNPC = 0;
+	gEditorMode = 0;
+	
 	//Initialize frame
 	frame.x = gMC.x - (SURFACE_WIDTH << 9);
 	frame.y = gMC.y - (SURFACE_HEIGHT << 9);
@@ -262,6 +266,10 @@ BOOL Game(HWND hWnd)
 	frame.mode = FRAME_MODE_MYCHAR;
 	frame.npc = 0;
 	
+	//Initialize editor
+	if (mode == GAMEMODE_EDITOR)
+		InitEditor();
+	
 	//Enter game loop
 	while (mode != GAMEMODE_STAFF)
 	{
@@ -394,6 +402,40 @@ BOOL Game(HWND hWnd)
 			if (!Flip_SystemTask(hWnd))
 				return TRUE;
 			PiyoPiyoProc();
+		}
+		
+		//Editor
+		while (mode == GAMEMODE_EDITOR)
+		{
+			//Start frame
+			tick = GetTickCount();
+			GetTrg();
+			CortBox(&grcFull, 0x000000);
+			
+			//Save NPCs if S is pressed
+			if (gKeyTrg & KEY_S)
+				SaveNpChar(npc);
+			
+			//Move frame and draw map
+			MoveFrameEditor(&frame, &map);
+			PutMapBack(&map, frame.x, frame.y);
+			PutNpChar(npc, &frame);
+			PutMapFront(&map, frame.x, frame.y);
+			PutMapVector(&map, frame.x, frame.y);
+			
+			//Run editor
+			EditorProc(npc);
+			PutEditorSelect(npc, &frame);
+			PutEditorNpcInfo(npc);
+			PutEditorCursor();
+			
+			//Run event (why?)
+			EventScriptProc(&event_scr, &items, npc, &map, &piyocont, &fade, &frame);
+			PutMsgBox(&event_scr);
+			
+			//End frame
+			if (!Flip_SystemTask(hWnd))
+				return TRUE;
 		}
 	}
 	
