@@ -12,8 +12,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="Debug"
-			IntermediateDirectory="Debug"
+			OutputDirectory="../VS2003/Debug"
+			IntermediateDirectory="../VS2003/Debug"
 			ConfigurationType="1"
 			CharacterSet="0">
 			<Tool
@@ -62,8 +62,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="Release"
-			IntermediateDirectory="Release"
+			OutputDirectory="../VS2003/Release"
+			IntermediateDirectory="../VS2003/Release"
 			ConfigurationType="1"
 			CharacterSet="0">
 			<Tool
@@ -117,58 +117,58 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath="..\Ikachan\Boss.cpp">
+				RelativePath="Boss.cpp">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Dialog.cpp">
+				RelativePath="Dialog.cpp">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Draw.cpp">
+				RelativePath="Draw.cpp">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Editor.cpp">
+				RelativePath="Editor.cpp">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Effect.cpp">
+				RelativePath="Effect.cpp">
 			</File>
 			<File
-				RelativePath="..\Ikachan\EventScript.cpp">
+				RelativePath="EventScript.cpp">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Flags.cpp">
+				RelativePath="Flags.cpp">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Game.cpp">
+				RelativePath="Game.cpp">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Generic.cpp">
+				RelativePath="Generic.cpp">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Item.cpp">
+				RelativePath="Item.cpp">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Map.cpp">
+				RelativePath="Map.cpp">
 			</File>
 			<File
-				RelativePath="..\Ikachan\NpChar.cpp">
+				RelativePath="NpChar.cpp">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Opening.cpp">
+				RelativePath="Opening.cpp">
 			</File>
 			<File
-				RelativePath="..\Ikachan\PixelScript.cpp">
+				RelativePath="PixelScript.cpp">
 			</File>
 			<File
-				RelativePath="..\Ikachan\PiyoPiyo.cpp">
+				RelativePath="PiyoPiyo.cpp">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Player.cpp">
+				RelativePath="Player.cpp">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Sound.cpp">
+				RelativePath="Sound.cpp">
 			</File>
 			<File
-				RelativePath="..\Ikachan\System.cpp">
+				RelativePath="System.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -176,58 +176,58 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
-				RelativePath="..\Ikachan\Boss.h">
+				RelativePath="Boss.h">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Dialog.h">
+				RelativePath="Dialog.h">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Draw.h">
+				RelativePath="Draw.h">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Editor.h">
+				RelativePath="Editor.h">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Effect.h">
+				RelativePath="Effect.h">
 			</File>
 			<File
-				RelativePath="..\Ikachan\EventScript.h">
+				RelativePath="EventScript.h">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Flags.h">
+				RelativePath="Flags.h">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Game.h">
+				RelativePath="Game.h">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Generic.h">
+				RelativePath="Generic.h">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Item.h">
+				RelativePath="Item.h">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Map.h">
+				RelativePath="Map.h">
 			</File>
 			<File
-				RelativePath="..\Ikachan\NpChar.h">
+				RelativePath="NpChar.h">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Opening.h">
+				RelativePath="Opening.h">
 			</File>
 			<File
-				RelativePath="..\Ikachan\PixelScript.h">
+				RelativePath="PixelScript.h">
 			</File>
 			<File
-				RelativePath="..\Ikachan\PiyoPiyo.h">
+				RelativePath="PiyoPiyo.h">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Player.h">
+				RelativePath="Player.h">
 			</File>
 			<File
-				RelativePath="..\Ikachan\Sound.h">
+				RelativePath="Sound.h">
 			</File>
 			<File
-				RelativePath="..\Ikachan\System.h">
+				RelativePath="System.h">
 			</File>
 		</Filter>
 		<Filter
@@ -235,7 +235,7 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
 			<File
-				RelativePath="..\Ikachan\Resource\Ikachan.rc">
+				RelativePath="Resource\Ikachan.rc">
 			</File>
 		</Filter>
 	</Files>

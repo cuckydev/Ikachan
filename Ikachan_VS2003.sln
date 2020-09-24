@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 8.00
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ikachan", "Ikachan.vcproj", "{B2DCE7BC-B1DF-4254-84F7-4E1CDA1CF2C4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ikachan", "Ikachan/Ikachan_VS2003.vcproj", "{B2DCE7BC-B1DF-4254-84F7-4E1CDA1CF2C4}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
