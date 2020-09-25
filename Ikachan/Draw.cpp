@@ -367,7 +367,7 @@ void InitTextObject(LPCTSTR name)
 	font = CreateFont(height, width, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FIXED_PITCH | FF_DONTCARE, name);
 }
 
-void PutText(int x, int y, LPCTSTR text, DWORD color)
+void PutText(int x, int y, LPCTSTR text, DWORD color, BOOL unk)
 {
 	//Lock backbuffer
 	HDC hdc;
@@ -384,7 +384,7 @@ void PutText(int x, int y, LPCTSTR text, DWORD color)
 	backbuffer->ReleaseDC(hdc);
 }
 
-void PutText2(int x, int y, LPCTSTR text, DWORD color, int surf_no)
+void PutText2(int x, int y, LPCTSTR text, DWORD color, int surf_no, BOOL unk)
 {
 	//Lock surface
 	HDC hdc;

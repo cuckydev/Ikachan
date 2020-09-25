@@ -97,7 +97,7 @@ int PixelScriptProc(PIX_SCR *ptx, PIYOPIYO_CONTROL *piyocont, BOOL ending)
 					{
 						//Type Shift-JIS
 						c[j] = ptx->data[ptx->p_read];
-						c[++j] = ptx->data[ptx->p_read + 1];
+						(c + 1)[j++] = ptx->data[ptx->p_read + 1];
 						ptx->p_read += 2;
 					}
 					else if (IS_COMMAND2('p','f'))
@@ -136,9 +136,9 @@ int PixelScriptProc(PIX_SCR *ptx, PIYOPIYO_CONTROL *piyocont, BOOL ending)
 					{
 						//Print text onto line
 						c[j] = 0;
-						PutText2(8, 1, c, 0xFF0000, SURFACE_ID_WORDS0 + ptx->line);
-						PutText2(8, 0, c, 0xFF8800, SURFACE_ID_WORDS0 + ptx->line);
-						if (++ptx->line >= MAX_PSLINES)
+						PutText2(8, 1, c, 0xFF0000, SURFACE_ID_WORDS0 + ptx->line, FALSE);
+						PutText2(8, 0, c, 0xFF8800, SURFACE_ID_WORDS0 + ptx->line, FALSE);
+						if (++ptx->line > (MAX_PSLINES - 1))
 							ptx->line = 0;
 						ptx->p_read += 2;
 						j = 999;

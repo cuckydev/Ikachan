@@ -249,7 +249,7 @@ void PutNumber2(int x, int y, int no)
 //Some debug function I think
 void DebugPutText(LPCTSTR text)
 {
-	PutText(0, 1, text, 0xFFFFFF);
+	PutText(0, 1, text, 0xFFFFFF, TRUE);
 }
 
 //Read event script file
@@ -583,8 +583,8 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, PIYOPI
 			c[0] = ptx->data[ptx->p_read];
 			c[1] = ptx->data[ptx->p_read + 1];
 			PlaySoundObject(SOUND_ID_MESSAGE, SOUND_MODE_PLAY);
-			PutText2((8 * ptx->p_write) + 1, 1, c, 0xFF0000, SURFACE_ID_TEXT0 + (ptx->line % 2));
-			PutText2(8 * ptx->p_write, 0, c, 0xFFFFFF, SURFACE_ID_TEXT0 + (ptx->line % 2));
+			PutText2((8 * ptx->p_write) + 1, 1, c, 0xFF0000, SURFACE_ID_TEXT0 + (ptx->line % 2), FALSE);
+			PutText2(8 * ptx->p_write, 0, c, 0xFFFFFF, SURFACE_ID_TEXT0 + (ptx->line % 2), FALSE);
 			ptx->p_write += 2;
 			ptx->p_read += 2;
 			return 0;
@@ -603,8 +603,8 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, PIYOPI
 			c[0] = ptx->data[ptx->p_read];
 			c[1] = 0;
 			PlaySoundObject(SOUND_ID_MESSAGE, SOUND_MODE_PLAY);
-			PutText2((8 * ptx->p_write) + 1, 1, c, 0xFF0000, SURFACE_ID_TEXT0 + (ptx->line % 2));
-			PutText2(8 * ptx->p_write, 0, c, 0xFFFFFF, SURFACE_ID_TEXT0 + (ptx->line % 2));
+			PutText2((8 * ptx->p_write) + 1, 1, c, 0xFF0000, SURFACE_ID_TEXT0 + (ptx->line % 2), FALSE);
+			PutText2(8 * ptx->p_write, 0, c, 0xFFFFFF, SURFACE_ID_TEXT0 + (ptx->line % 2), FALSE);
 			ptx->p_write++;
 			ptx->p_read++;
 			return 0;
@@ -623,8 +623,8 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, PIYOPI
 			c[0] = ptx->data[ptx->p_read];
 			c[1] = 0;
 			PlaySoundObject(SOUND_ID_MESSAGE, SOUND_MODE_PLAY);
-			PutText2((8 * ptx->p_write) + 1, 1, c, 0xFF0000, SURFACE_ID_TEXT0 + (ptx->line % 2));
-			PutText2(8 * ptx->p_write, 0, c, 0xFFFFFF, SURFACE_ID_TEXT0 + (ptx->line % 2));
+			PutText2((8 * ptx->p_write) + 1, 1, c, 0xFF0000, SURFACE_ID_TEXT0 + (ptx->line % 2), FALSE);
+			PutText2(8 * ptx->p_write, 0, c, 0xFFFFFF, SURFACE_ID_TEXT0 + (ptx->line % 2), FALSE);
 			ptx->p_write++;
 			ptx->p_read++;
 			return 0;
@@ -646,8 +646,8 @@ char EventScriptProc(EVENT_SCR *ptx, ITEMS *items, NPCHAR *npc, MAP *map, PIYOPI
 				c[0] = ptx->data[ptx->p_read];
 				c[1] = 0;
 				PlaySoundObject(SOUND_ID_MESSAGE, SOUND_MODE_PLAY);
-				PutText2((8 * ptx->p_write) + 1, 1, c, 0xFF0000, SURFACE_ID_TEXT0 + (ptx->line % 2));
-				PutText2(8 * ptx->p_write, 0, c, 0xFFFFFF, SURFACE_ID_TEXT0 + (ptx->line % 2));
+				PutText2((8 * ptx->p_write) + 1, 1, c, 0xFF0000, SURFACE_ID_TEXT0 + (ptx->line % 2), FALSE);
+				PutText2(8 * ptx->p_write, 0, c, 0xFFFFFF, SURFACE_ID_TEXT0 + (ptx->line % 2), FALSE);
 				ptx->p_write++;
 				ptx->p_read++;
 				return 0;

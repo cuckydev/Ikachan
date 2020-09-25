@@ -78,6 +78,6 @@ void PutBitmap3(const RECT *rcView, int x, int y, const RECT *rect, int surf_no)
 void CortBox(const RECT *rect, DWORD col);
 void CortBox2(const RECT *rect, DWORD col, int surf_no);
 void InitTextObject(LPCTSTR name);
-void PutText(int x, int y, LPCTSTR text, DWORD color);
-void PutText2(int x, int y, LPCTSTR text, DWORD color, int surf_no);
+void PutText(int x, int y, LPCTSTR text, DWORD color, BOOL unk);
+void PutText2(int x, int y, LPCTSTR text, DWORD color, int surf_no, BOOL unk);
 void EndTextObject();

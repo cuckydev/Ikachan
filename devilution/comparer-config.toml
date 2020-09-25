@@ -1,0 +1,11 @@
+# conversion between function and file location of the functions
+# = (0x401000 - PE header offset) (0x400 for VC5 linker)
+address_offset = 0x400000
+
+[[func]]
+name = "PixelScriptProc"
+addr = 0x40C490
+
+[[func]]
+name = "PutText2"
+addr = 0x4038B0

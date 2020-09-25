@@ -3,6 +3,10 @@
 
 # -- Modified by 20kdc because NOT EVERYTHING IS ABOUT YOU, VS.
 
+# Devilution comparer files
+devilution/orig.asm
+devilution/compare.asm
+
 # User-specific files
 *.suo
 *.user

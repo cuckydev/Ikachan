@@ -11,7 +11,7 @@ struct PIX_SCR
 	DWORD p_read;
 	DWORD size;
 	int ypos_line[MAX_PSLINES];
-	int line;
+	DWORD line;
 	char scale;
 	BOOLEAN end;
 };

@@ -71,6 +71,7 @@
 				Optimization="0"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				RuntimeLibrary="4"
+				BufferSecurityCheck="FALSE"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
