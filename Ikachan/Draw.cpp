@@ -76,6 +76,12 @@ BOOL StartDirectDraw(HWND hWnd, int wndSize)
 	//Set cooperative level
 	switch (wndSize)
 	{
+		case WS_FULLSCREEN:
+			mag = 2;
+			fullscreen = TRUE;
+			lpDD->SetCooperativeLevel(hWnd, DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE);
+			lpDD->SetDisplayMode(SURFACE_WIDTH * mag, SURFACE_HEIGHT * mag, 16);
+			break;
 		case WS_320x240:
 			mag = 1;
 			fullscreen = FALSE;
@@ -85,12 +91,6 @@ BOOL StartDirectDraw(HWND hWnd, int wndSize)
 			mag = 2;
 			fullscreen = FALSE;
 			lpDD->SetCooperativeLevel(hWnd, DDSCL_NORMAL);
-			break;
-		case WS_FULLSCREEN:
-			mag = 2;
-			fullscreen = TRUE;
-			lpDD->SetCooperativeLevel(hWnd, DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE);
-			lpDD->SetDisplayMode(SURFACE_WIDTH * mag, SURFACE_HEIGHT * mag, 16);
 			break;
 	}
 
@@ -117,6 +117,7 @@ BOOL StartDirectDraw(HWND hWnd, int wndSize)
 		return FALSE;
 
 	//Backbuffer
+	memset(&ddsd, 0, sizeof(DDSURFACEDESC));
 	ddsd.dwSize = sizeof(DDSURFACEDESC);
 	ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
 	ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN;
@@ -159,18 +160,18 @@ void EndDirectDraw(HWND hWnd)
 }
 
 //Surface creation
-BOOL MakeSurface_File(LPCTSTR name, int surf_no)
+BOOL MakeSurface_File(LPCTSTR name, int surf_no) //TODO: ASM accuracy
 {
+	//Get path
+	char path[MAX_PATH];
+	sprintf(path, "%s\\%s", gModulePath, name);
+	
 	//Make sure a surface can be made here
 	if (surf_no > MAX_SURFACE)
 		return FALSE;
 	if (surf[surf_no] != NULL)
 		return FALSE;
-
-	//Get path
-	char path[MAX_PATH];
-	sprintf(path, "%s\\%s", gModulePath, name);
-
+	
 	//Load image
 	HANDLE handle = LoadImage(GetModuleHandle(NULL), path, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
 	if (handle == NULL)

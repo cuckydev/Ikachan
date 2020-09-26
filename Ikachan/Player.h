@@ -7,7 +7,7 @@ struct MYCHAR
 {
 	BOOLEAN cond; //x0 x420DD8
 	BOOLEAN dead; //x1 x420DD9
-	char unit; //x2 x420DDA
+	BYTE unit; //x2 x420DDA
 	BYTE equip; //x3 x420DDB
 	int x; //x4 x420DDC
 	int y; //x8 x420DE0
@@ -16,7 +16,7 @@ struct MYCHAR
 	char ani_no; //x14 x420DEC
 	//alignment x15
 	short ani_wait; //x16 x420DEE
-	WORD shock; //x18 x420DF0
+	short shock; //x18 x420DF0
 	short no_event; //x1A x420DF2
 	short life; //x1C x420DF4
 	short exp; //x1E x420DF6

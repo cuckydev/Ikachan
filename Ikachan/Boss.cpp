@@ -49,28 +49,15 @@ void PutBoss(FRAME *frame)
 	
 	if (gBoss.cond)
 	{
-		RECT body, head;
-		
 		//Get head rect
-		if ( gBoss.act_no == 2 )
-		{
-			RECT *headp = &rcIronHead[gBoss.act_wait % 2];
-			head.left = headp->left;
-			head.top = headp->top;
-			head.right = headp->right;
-			head.bottom = headp->bottom;
-		}
+		RECT head;
+		if (gBoss.act_no == 2)
+			head = rcIronHead[gBoss.act_wait % 2];
 		else
-		{
-			head = rcIronHead[0]; //So... why the above and below?
-		}
+			head = rcIronHead[0];
 		
 		//Get body rect
-		RECT *bodyp = &rcIronHead[gBoss.ani_no];
-		body.left = bodyp->left;
-		body.top = bodyp->top;
-		body.right = bodyp->right;
-		body.bottom = bodyp->bottom;
+		RECT body = rcIronHead[gBoss.ani_no];
 		
 		//Draw Iron Head
 		if (gBoss.direct)
@@ -108,6 +95,8 @@ void PutBoss(FRAME *frame)
 
 void ActBoss(CARET_SPAWNER *caret_spawner)
 {
+	int acc_x, acc_y;
+	
 	//Decrement shock counter
 	if (gBoss.shock > 0)
 		--gBoss.shock;
@@ -116,14 +105,17 @@ void ActBoss(CARET_SPAWNER *caret_spawner)
 	{
 		case 0:
 			//Move towards target
+			acc_x = 6;
+			acc_y = 4;
+			
 			if (gBoss.x > gBoss.tgt_x)
-				gBoss.xm -= 6;
+				gBoss.xm -= acc_x;
 			if (gBoss.x < gBoss.tgt_x)
-				gBoss.xm += 6;
+				gBoss.xm += acc_x;
 			if (gBoss.y > gBoss.tgt_y)
-				gBoss.ym -= 4;
+				gBoss.ym -= acc_y;
 			if (gBoss.y < gBoss.tgt_y)
-				gBoss.ym += 4;
+				gBoss.ym += acc_y;
 			
 			//Swim in moving direction
 			if (gBoss.xm < 0 && gBoss.direct == 1)
@@ -196,14 +188,17 @@ void ActBoss(CARET_SPAWNER *caret_spawner)
 			break;
 		case 1:
 			//Move towards Ikachan
+			acc_x = 8;
+			acc_y = 8;
+			
 			if (gBoss.x > gMC.x)
-				gBoss.xm -= 8;
+				gBoss.xm -= acc_x;
 			if (gBoss.x < gMC.x)
-				gBoss.xm += 8;
+				gBoss.xm += acc_x;
 			if (gBoss.y > gMC.y)
-				gBoss.ym -= 8;
+				gBoss.ym -= acc_y;
 			if (gBoss.y < gMC.y)
-				gBoss.ym += 8;
+				gBoss.ym += acc_y;
 			
 			//Charge towards Ikachan after some time
 			if (gBoss.act_wait > 0)
@@ -274,8 +269,8 @@ void ActBoss(CARET_SPAWNER *caret_spawner)
 					caretsp->num = 1;
 					caretsp->x = gBoss.x + 0x8000;
 					caretsp->y = gBoss.y + 0x3000;
-					caretsp->rand_moveright = -gBoss.xm;
-					caretsp->rand_moveleft = -gBoss.xm;
+					caretsp->rand_moveright = gBoss.xm * -1;
+					caretsp->rand_moveleft = gBoss.xm * -1;
 					caretsp->rand_movedown = 0x400;
 					caretsp->rand_moveup = -0x244;
 					caretsp->rand_x = 16;
@@ -323,96 +318,76 @@ void DamageBoss(CARET_SPAWNER *caret_spawner, char damage)
 
 void HitMyCharBoss(EVENT_SCR *event_scr, CARET_SPAWNER *caret_spawner)
 {
-	BYTE flag = 0;
-	BOOLEAN touch = FALSE; //???
+	char flag = 0;
+	char touch = FALSE; //???
 	
-	if (gBoss.cond)
+	if (gBoss.cond == FALSE)
+		return;
+	
+	//Check if Ikachan is touching Iron Head
+	if (gMC.x < (gBoss.x + gBoss.hit.right) &&
+		gMC.x > (gBoss.x + gBoss.hit.right - 0x1400) &&
+		gMC.y < (gBoss.y + gBoss.hit.bottom - 0x1000) &&
+		(gMC.y + 0x4000) > (gBoss.y + gBoss.hit.top + 0x1000))
 	{
-		//Check if Ikachan is touching Iron Head
-		if (gMC.x < (gBoss.x + gBoss.hit.right) &&
-		    gMC.x > (gBoss.x + gBoss.hit.right - 0x1400) &&
-		    gMC.y < (gBoss.y + gBoss.hit.bottom - 0x1000) &&
-		    (gMC.y + 0x4000) > (gBoss.y + gBoss.hit.top + 0x1000))
-		{
-			gMC.x = gBoss.x + gBoss.hit.right;
-			gMC.xm = 0;
-			flag |= 1;
-			touch = TRUE;
-		}
-		if (gMC.y < (gBoss.y + gBoss.hit.bottom) &&
-		    gMC.y > (gBoss.y + gBoss.hit.bottom - 0x1400) &&
-		    gMC.x < (gBoss.x + gBoss.hit.right - 0x1000) &&
-		    (gMC.x + 0x4000) > (gBoss.x + gBoss.hit.left + 0x1000))
-		{
-			if (gMC.ym < -100)
-				PlaySoundObject(SOUND_ID_HITHEAD, SOUND_MODE_PLAY);
-			gMC.y = gBoss.y + gBoss.hit.bottom;
+		gMC.x = gBoss.x + gBoss.hit.right;
+		gMC.xm = 0;
+		flag |= 1;
+		touch = TRUE;
+	}
+	if (gMC.y < (gBoss.y + gBoss.hit.bottom) &&
+		gMC.y > (gBoss.y + gBoss.hit.bottom - 0x1400) &&
+		gMC.x < (gBoss.x + gBoss.hit.right - 0x1000) &&
+		(gMC.x + 0x4000) > (gBoss.x + gBoss.hit.left + 0x1000))
+	{
+		if (gMC.ym < -100)
+			PlaySoundObject(SOUND_ID_HITHEAD, SOUND_MODE_PLAY);
+		gMC.y = gBoss.y + gBoss.hit.bottom;
+		gMC.ym = 0;
+		flag |= 2;
+		touch = TRUE;
+	}
+	if ((gMC.x + 0x4000) > (gBoss.x + gBoss.hit.left) &&
+		(gMC.x + 0x4000) < (gBoss.x + gBoss.hit.left + 0x1400) &&
+		gMC.y < (gBoss.y + gBoss.hit.bottom - 0x1000) &&
+		(gMC.y + 0x4000) > (gBoss.y + gBoss.hit.top + 0x1000))
+	{
+		gMC.x = gBoss.x + gBoss.hit.left - 0x4000;
+		gMC.xm = 0;
+		flag |= 4;
+		touch = TRUE;
+	}
+	if ((gMC.y + 0x4000) > (gBoss.y + gBoss.hit.top) &&
+		(gMC.y + 0x4000) < (gBoss.y + gBoss.hit.top + 0x1400) &&
+		gMC.x < (gBoss.x + gBoss.hit.right - 0x1000) &&
+		(gMC.x + 0x4000) > (gBoss.x + gBoss.hit.left + 0x1000))
+	{
+		gMC.airborne = FALSE;
+		gMC.y = gBoss.y + gBoss.hit.top - 0x4000;
+		if (gMC.ym > 0)
 			gMC.ym = 0;
-			flag |= 2;
-			touch = TRUE;
-		}
-		if ((gMC.x + 0x4000) > (gBoss.x + gBoss.hit.left) &&
-		    (gMC.x + 0x4000) < (gBoss.x + gBoss.hit.left + 0x1400) &&
-		    gMC.y < (gBoss.y + gBoss.hit.bottom - 0x1000) &&
-		    (gMC.y + 0x4000) > (gBoss.y + gBoss.hit.top + 0x1000))
+		flag |= 8;
+		touch = TRUE;
+	}
+	
+	if (touch)
+	{
+		//Handle interaction
+		switch (gBoss.act_no)
 		{
-			gMC.x = gBoss.x + gBoss.hit.left - 0x4000;
-			gMC.xm = 0;
-			flag |= 4;
-			touch = TRUE;
-		}
-		if ((gMC.y + 0x4000) > (gBoss.y + gBoss.hit.top) &&
-		    (gMC.y + 0x4000) < (gBoss.y + gBoss.hit.top + 0x1400) &&
-		    gMC.x < (gBoss.x + gBoss.hit.right - 0x1000) &&
-		    (gMC.x + 0x4000) > (gBoss.x + gBoss.hit.left + 0x1000))
-		{
-			gMC.airborne = FALSE;
-			gMC.y = gBoss.y + gBoss.hit.top - 0x4000;
-			if (gMC.ym > 0)
-				gMC.ym = 0;
-			flag |= 8;
-			touch = TRUE;
-		}
-		
-		if (touch)
-		{
-			//Handle interaction
-			switch (gBoss.act_no)
-			{
-				case 0:
-					if (gMC.no_event == 0)
-					{
-						event_scr->mode = 1;
-						event_scr->x1C = 4;
-						event_scr->event_no = gBoss.code_event;
-						gMC.no_event = 100;
-					}
-					break;
-				case 1:
-					//Damage Iron Head with either 1 damage or 3 if dashing
-					if (gBoss.shock == 0)
-					{
-						if (flag & 2)
-						{
-							gBoss.ym = -0x400;
-							gMC.ym = 0x400;
-							if (gMC.unit == 1)
-								DamageBoss(caret_spawner, 3);
-							else
-								DamageBoss(caret_spawner, 1);
-						}
-						else if (gMC.unit == 1)
-						{
-							if (gMC.direct == 0)
-								gBoss.xm = -0x400;
-							if (gMC.direct == 1)
-								gBoss.xm = 0x400;
-							DamageBoss(caret_spawner, 3);
-						}
-					}
-					break;
-				case 2:
-					//Damage Iron Head if hit from below or Ikachan
+			case 0:
+				if (gMC.no_event == 0)
+				{
+					event_scr->mode = 1;
+					event_scr->x1C = 4;
+					event_scr->event_no = gBoss.code_event;
+					gMC.no_event = 100;
+				}
+				break;
+			case 1:
+				//Damage Iron Head with either 1 damage or 3 if dashing
+				if (gBoss.shock == 0)
+				{
 					if (flag & 2)
 					{
 						gBoss.ym = -0x400;
@@ -422,29 +397,49 @@ void HitMyCharBoss(EVENT_SCR *event_scr, CARET_SPAWNER *caret_spawner)
 						else
 							DamageBoss(caret_spawner, 1);
 					}
-					else if (gMC.shock == 0)
+					else if (gMC.unit == 1)
 					{
-						if (gMC.x < gBoss.x + 0x6000)
-							gMC.xm = -0x400;
-						if (gMC.x > gBoss.x + 0x6000)
-							gMC.xm = 0x400;
-						DamageMyChar(caret_spawner, 3);
+						if (gMC.direct == 0)
+							gBoss.xm = -0x400;
+						if (gMC.direct == 1)
+							gBoss.xm = 0x400;
+						DamageBoss(caret_spawner, 3);
 					}
-					break;
-			}
-			
-			//Check if Iron Head's been defeated
-			if (gBoss.act_no != 0 && gBoss.life == 0)
-			{
-				event_scr->mode = 1;
-				event_scr->x1C = 4;
-				event_scr->event_no = gBoss.defeat_event;
-				gMC.no_event = 100;
-				gBoss.act_no = 0;
-				gBoss.shock = 0;
-				gBoss.xm = 0;
-				gBoss.ym = 0;
-			}
+				}
+				break;
+			case 2:
+				//Damage Iron Head if hit from below or Ikachan
+				if (flag & 2)
+				{
+					gBoss.ym = -0x400;
+					gMC.ym = 0x400;
+					if (gMC.unit == 1)
+						DamageBoss(caret_spawner, 3);
+					else
+						DamageBoss(caret_spawner, 1);
+				}
+				else if (gMC.shock == 0)
+				{
+					if (gMC.x < gBoss.x + 0x6000)
+						gMC.xm = -0x400;
+					if (gMC.x > gBoss.x + 0x6000)
+						gMC.xm = 0x400;
+					DamageMyChar(caret_spawner, 3);
+				}
+				break;
+		}
+		
+		//Check if Iron Head's been defeated
+		if (gBoss.act_no != 0 && gBoss.life == 0)
+		{
+			event_scr->mode = 1;
+			event_scr->x1C = 4;
+			event_scr->event_no = gBoss.defeat_event;
+			gMC.no_event = 100;
+			gBoss.act_no = 0;
+			gBoss.shock = 0;
+			gBoss.xm = 0;
+			gBoss.ym = 0;
 		}
 	}
 }

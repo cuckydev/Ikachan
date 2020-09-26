@@ -3,9 +3,82 @@
 address_offset = 0x400000
 
 [[func]]
-name = "PixelScriptProc"
-addr = 0x40C490
+name = "InitBoss"
+addr = 0x401000
+
+[[func]]
+name = "PutBoss"
+addr = 0x4010D0
+
+[[func]]
+name = "ActBoss"
+addr = 0x401370
+size = 0x676
+
+[[func]]
+name = "JudgeHitBossBlock"
+addr = 0x4019F0
+
+[[func]]
+name = "DamageBoss"
+addr = 0x401F50
+
+[[func]]
+name = "HitMyCharBoss"
+addr = 0x402030
+
+[[func]]
+name = "SaveOption"
+addr = 0x4027F0
+
+[[func]]
+name = "LoadOption"
+addr = 0x402870
+
+[[func]]
+name = "InitDialog"
+addr = 0x402900
+
+[[func]]
+name = "UseDialog"
+addr = 0x402990
+
+[[func]]
+name = "DlgProc"
+addr = 0x4029D0
+
+[[func]]
+name = "SetClientOffset"
+addr = 0x402A50
+
+[[func]]
+name = "Flip_SystemTask"
+addr = 0x402A70
+
+[[func]]
+name = "StartDirectDraw"
+addr = 0x402B50
+
+[[func]]
+name = "EndDirectDraw"
+addr = 0x402DB0
+
+[[func]]
+name = "MakeSurface_File"
+addr = 0x402EA0
+
+[[func]]
+name = "MakeSurface_Generic"
+addr = 0x403280
+
+[[func]]
+name = "BackupSurface"
+addr = 0x403350
 
 [[func]]
 name = "PutText2"
 addr = 0x4038B0
+
+[[func]]
+name = "PixelScriptProc"
+addr = 0x40C490

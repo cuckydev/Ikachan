@@ -47,17 +47,18 @@ BOOL LoadOption(OPTION *option)
 }
 
 //Dialog functions
-LPCTSTR sizes[3] = {
-	"\x83\x74\x83\x8B\x83\x58\x83\x4E\x83\x8A\x81\x5B\x83\x93",
-	"\x83\x45\x83\x43\x83\x93\x83\x68\x83\x45\x33\x32\x30\x78\x32\x34\x30",
-	"\x83\x45\x83\x43\x83\x93\x83\x68\x83\x45\x36\x34\x30\x2A\x34\x38\x30",
-};
-
 void InitDialog(HWND hDlg)
 {
+	//Window size labels
+	const LPCTSTR size_names[3] = {
+		"\x83\x74\x83\x8B\x83\x58\x83\x4E\x83\x8A\x81\x5B\x83\x93",
+		"\x83\x45\x83\x43\x83\x93\x83\x68\x83\x45\x33\x32\x30\x78\x32\x34\x30",
+		"\x83\x45\x83\x43\x83\x93\x83\x68\x83\x45\x36\x34\x30\x2A\x34\x38\x30",
+	};
+
 	//Insert window sizes to size selector
 	for (int i = 0; i < 3; i++)
-		SendDlgItemMessage(hDlg, 1003, CB_ADDSTRING, 0, (LPARAM)(sizes[i]));
+		SendDlgItemMessage(hDlg, 1003, CB_ADDSTRING, 0, (LPARAM)size_names[i]);
 
 	//Read options
 	OPTION option;
@@ -88,20 +89,20 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 	{
 		case WM_INITDIALOG:
 			InitDialog(hDlg);
-			return TRUE;
+			break;
 		case WM_COMMAND:
-			switch (wParam)
+			switch (LOWORD(wParam))
 			{
+				case 2:
+					EndDialog(hDlg, 0);
+					break;
 				case 1:
 					UseDialog(hDlg);
 					EndDialog(hDlg, 1);
 					break;
-				case 2:
-					EndDialog(hDlg, 0);
-					break;
-				default:
-					break;
 			}
+		default:
+			return FALSE;
 	}
-	return FALSE;
+	return TRUE;
 }

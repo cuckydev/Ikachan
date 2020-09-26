@@ -5,7 +5,7 @@
 
 struct BOSS
 {
-	char cond;
+	BOOLEAN cond;
 	short life;
 	short shock;
 	BYTE x6;
